@@ -1,0 +1,7 @@
+site/
+__pycache__/
+.env
+.dev.vars
+.wrangler/
+.claude/
+_src/

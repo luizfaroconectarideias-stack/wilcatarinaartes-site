@@ -1,0 +1,72 @@
+{
+  "dominio": "https://wilcatarinaartes.com.br",
+  "nome": "Wil Catarina",
+  "nome_site": "Wil Catarina Artes",
+  "cidade": "Niterói",
+  "uf": "RJ",
+  "whatsapp": "5521982654227",
+  "whatsapp_exibir": "(21) 98265-4227",
+  "email": "wilcatarina@gmail.com",
+  "instagram": "https://www.instagram.com/wilcatarina/",
+  "facebook": "https://www.facebook.com/share/18pn4cggVB/",
+  "descricao": "Wil Catarina, artista visual e curadora de Niterói (RJ): telas e esculturas com inspiração na natureza. Veja as obras e faça seu pedido pelo WhatsApp.",
+  "frase": "Pinto para escutar o que o mundo ainda não disse.",
+  "obras": [
+    {
+      "slug": "tela-01",
+      "titulo": "Tela 01",
+      "tipo": "Tela",
+      "foto": "d64.jpg",
+      "preco": 1000,
+      "resumo": "Pintura abstrata em amarelo, laranja e vermelho, com traços largos e movimento.",
+      "descricao": "Pintura abstrata de Wil Catarina em tons de amarelo, laranja e vermelho, com pinceladas largas que criam movimento e luz. Uma tela para dar calor e energia ao ambiente."
+    },
+    {
+      "slug": "tela-02",
+      "titulo": "Tela 02",
+      "tipo": "Tela",
+      "foto": "d62.jpg",
+      "preco": null,
+      "resumo": "Pintura abstrata com azuis, laranjas e vermelhos em camadas de tinta e textura.",
+      "descricao": "Pintura abstrata de Wil Catarina com camadas de azul, laranja e vermelho sobre fundo texturizado, cheia de movimento e gesto."
+    },
+    {
+      "slug": "escultura-01",
+      "titulo": "Escultura 01",
+      "tipo": "Escultura",
+      "foto": "d44.jpg",
+      "preco": null,
+      "resumo": "Escultura de formas orgânicas, inspirada em elementos da natureza.",
+      "descricao": "Escultura de Wil Catarina com formas orgânicas que lembram troncos e raízes entrelaçados, parte da pesquisa da artista com elementos naturais."
+    }
+  ],
+  "exposicoes_individuais": [
+    "Museu de Arte Contemporânea (MAC), Niterói",
+    "Corredor das Artes (andar do Gabinete do Prefeito de Niterói)",
+    "Universidade La Salle",
+    "Correios de Niterói (2 exposições)",
+    "Sala de Cultura Leila Diniz (Imprensa Oficial do Estado do Rio de Janeiro)"
+  ],
+  "exposicoes_coletivas": [
+    "Museu de Arte Contemporânea",
+    "Galeria Lê Briones",
+    "Galeria Zagut",
+    "Galeria Eixo",
+    "Sala de Cultura Leila Diniz (Imprensa Oficial do Estado do Rio de Janeiro)",
+    "Universidade La Salle",
+    "Centro de Artes da UFF",
+    "Sala Carlos Couto (Theatro Municipal de Niterói)",
+    "Museu do Ingá",
+    "Solar do Jambeiro",
+    "Sociedade Brasileira de Belas Artes (SBBA)",
+    "Correios do Rio de Janeiro",
+    "Correios de Niterói"
+  ],
+  "faq": [
+    ["Como comprar uma obra da Wil Catarina?", "Escolha a obra no catálogo e clique em “Pedir pelo WhatsApp”. A conversa vai direto para a artista, que combina preço, pagamento e entrega com você."],
+    ["Quem é Wil Catarina?", "Wil Catarina é artista visual e curadora de Niterói (RJ). Cria pinturas, desenhos e esculturas inspirados na natureza e já expôs no Museu de Arte Contemporânea (MAC), em galerias e em espaços culturais do Rio de Janeiro."],
+    ["Quais tipos de obra a artista faz?", "Telas (pintura), desenhos e esculturas, muitas vezes com elementos naturais e sustentáveis."],
+    ["Posso pedir medidas e detalhes de uma obra antes de comprar?", "Sim. Ao clicar no botão de WhatsApp da obra, a mensagem já sai com o nome da peça e você pode perguntar medidas, técnica e valor."],
+    ["A artista dá aulas ou oficinas?", "Sim. Wil Catarina compartilha sua arte em oficinas e workshops. Pergunte pelas próximas turmas no WhatsApp."]
+  ]
+}
