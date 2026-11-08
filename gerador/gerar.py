@@ -181,6 +181,16 @@ def pg_obras():
     gravar("/obras/", pagina("/obras/", "Obras de Wil Catarina — telas e esculturas", "Telas e esculturas da artista visual Wil Catarina, de Niterói (RJ). Veja as obras e peça pelo WhatsApp.", corpo, ld, ativo="/obras/"))
 
 # ---------- home ----------
+def termo_dia():
+    t0 = TERMOS[0]
+    letras = {inicial(t) for t in TERMOS}
+    az = "".join(f'<a href="/glossario/letra-{L.lower()}/">{L}</a>' if L in letras else f'<span aria-hidden="true">{L}</span>' for L in "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    dados = json.dumps([[nome_termo(t).capitalize(), t["resumo"], t["url"]] for t in TERMOS], ensure_ascii=False)
+    return f"""<section class="tdia w" aria-labelledby="td-n"><div class="tdia-g">
+<div class="tdia-a"><p class="kick">Termo do dia · Glossário</p><h2 id="td-n">{e(nome_termo(t0).capitalize())}</h2><p id="td-r">{e(t0['resumo'])}</p><a class="sub" id="td-l" href="{t0['url']}">Ler a definição completa</a></div>
+<div class="tdia-b"><p>{len(TERMOS)} termos de arte, curadoria e colecionismo explicados de forma direta</p><nav class="az2" aria-label="Glossário por letra">{az}</nav><a class="sub" href="/glossario/">Ver o glossário completo</a></div>
+</div><script>(function(){{var d={dados},i=Math.floor(Date.now()/864e5)%d.length,t=d[i];document.getElementById('td-n').textContent=t[0];document.getElementById('td-r').textContent=t[1];document.getElementById('td-l').href=t[2]}})();</script></section>"""
+
 def pg_home():
     gl_cards = "".join(f'<li><a href="{t["url"]}">{e(t["termo"].capitalize())}</a>: {e(t["resumo"].split(". ")[0].rstrip("."))}.</li>' for t in TERMOS[:6])
     cards = "".join(card(o) for o in S["obras"])
@@ -194,7 +204,7 @@ def pg_home():
 <p><a href="/obras/">Ver todas as obras »</a></p></div>
 <section class="faixa"><div class="w"><div class="hero" style="padding-block:0"><div class="ph-wrap">{pic('wil', 'Wil Catarina, artista visual, segurando uma pequena escultura', 712, 827, (480, 712), '(min-width:800px) 480px, 100vw').replace('<img ','<img class="ph" style="max-width:420px;width:100%" ')}</div>
 <div><h2 style="margin-top:0">Sobre a artista</h2><p>“{e(S['frase'])}” A obra de Wil nasce do diálogo entre razão e sensibilidade, com olhar atento ao corpo, ao tempo e à matéria. É graduada em Artes pela UFF e faz oficinas e workshops para compartilhar seu processo.</p><p><a href="/sobre/">Conheça a trajetória »</a></p></div></div></div></section>
-<div class="w"><h2>Glossário de arte</h2><ul class="lista">{gl_cards}</ul><p><a href="/glossario/">Ver os 20 termos do glossário »</a></p><h2>Onde expor arte no Rio de Janeiro</h2><p>Museus, galerias e centros culturais do estado, organizados por cidade. <a href="/onde-expor-arte-rj/">Ver locais de exposição »</a></p><h2>Do blog</h2><ul class="lista">{posts}</ul>
+{termo_dia()}<div class="w"><h2>Onde expor arte no Rio de Janeiro</h2><p>Museus, galerias e centros culturais do estado, organizados por cidade. <a href="/onde-expor-arte-rj/">Ver locais de exposição »</a></p><h2>Do blog</h2><ul class="lista">{posts}</ul>
 <h2>Dúvidas frequentes</h2>{faq_html(S['faq'])}</div>"""
     ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR", "publisher": {"@id": PESSOA_ID}},
           pessoa(), {"@type": "WebPage", "url": DOM + "/", "name": "Wil Catarina Artes", "about": {"@id": PESSOA_ID}, "isPartOf": {"@id": SITE_ID},
