@@ -1,0 +1,26 @@
+CREATE TABLE IF NOT EXISTS obras (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug TEXT NOT NULL UNIQUE,
+  titulo TEXT NOT NULL,
+  tipo TEXT NOT NULL DEFAULT 'Tela',
+  preco REAL,
+  medidas TEXT NOT NULL DEFAULT '',
+  tecnica TEXT NOT NULL DEFAULT '',
+  ano TEXT NOT NULL DEFAULT '',
+  descricao TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'disponivel',
+  publicada INTEGER NOT NULL DEFAULT 1,
+  ordem INTEGER NOT NULL DEFAULT 0,
+  criado TEXT NOT NULL DEFAULT (datetime('now')),
+  atualizado TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS fotos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  obra_id INTEGER NOT NULL REFERENCES obras(id) ON DELETE CASCADE,
+  ordem INTEGER NOT NULL DEFAULT 0,
+  estatico TEXT,
+  p BLOB,
+  g BLOB
+);
+CREATE INDEX IF NOT EXISTS fotos_obra ON fotos(obra_id, ordem);
+CREATE TABLE IF NOT EXISTS login_falhas (ip TEXT NOT NULL, ts INTEGER NOT NULL);

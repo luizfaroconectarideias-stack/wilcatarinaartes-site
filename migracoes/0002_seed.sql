@@ -1,0 +1,6 @@
+INSERT OR IGNORE INTO obras (id,slug,titulo,tipo,preco,descricao,status,publicada,ordem) VALUES (1,'tela-01','Tela 01','Tela',1000,'Pintura abstrata de Wil Catarina em tons de amarelo, laranja e vermelho, com pinceladas largas que criam movimento e luz. Uma tela para dar calor e energia ao ambiente.','disponivel',1,3);
+INSERT INTO fotos (obra_id,ordem,estatico) SELECT 1,0,'tela-01' WHERE NOT EXISTS (SELECT 1 FROM fotos WHERE obra_id=1);
+INSERT OR IGNORE INTO obras (id,slug,titulo,tipo,preco,descricao,status,publicada,ordem) VALUES (2,'tela-02','Tela 02','Tela',NULL,'Pintura abstrata de Wil Catarina com camadas de azul, laranja e vermelho sobre fundo texturizado, cheia de movimento e gesto.','disponivel',1,2);
+INSERT INTO fotos (obra_id,ordem,estatico) SELECT 2,0,'tela-02' WHERE NOT EXISTS (SELECT 1 FROM fotos WHERE obra_id=2);
+INSERT OR IGNORE INTO obras (id,slug,titulo,tipo,preco,descricao,status,publicada,ordem) VALUES (3,'escultura-01','Escultura 01','Escultura',NULL,'Escultura de Wil Catarina com formas orgânicas que lembram troncos e raízes entrelaçados, parte da pesquisa da artista com elementos naturais.','disponivel',1,1);
+INSERT INTO fotos (obra_id,ordem,estatico) SELECT 3,0,'escultura-01' WHERE NOT EXISTS (SELECT 1 FROM fotos WHERE obra_id=3);

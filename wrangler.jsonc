@@ -1,9 +1,17 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "wilcatarinaartes",
+  "main": "src/worker.js",
   "compatibility_date": "2026-11-04",
   "observability": { "enabled": true },
-  "assets": { "directory": "site" },
+  "assets": {
+    "directory": "site",
+    "binding": "ASSETS",
+    "run_worker_first": ["/", "/obras", "/obras/*", "/api/*", "/f/*", "/_tpl/*", "/sitemap.xml"]
+  },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "wilcatarinaartes-painel", "database_id": "4f792e7d-e565-453e-9e39-e46a5c4f807f", "migrations_dir": "migracoes" }
+  ],
   "routes": [
     { "pattern": "wilcatarinaartes.com.br", "custom_domain": true },
     { "pattern": "www.wilcatarinaartes.com.br", "custom_domain": true }

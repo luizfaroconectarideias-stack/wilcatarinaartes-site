@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel das obras | Wil Catarina</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/estilo.css">
+<style>
+body{padding-bottom:60px}
+.pw{max-width:860px;margin:0 auto;padding:0 16px}
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--ln);flex-wrap:wrap}
+.topo h1{font-size:1.4rem;margin:0}
+.caixa{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:20px;margin:20px 0;box-shadow:var(--sh)}
+label{display:block;font-weight:600;margin:14px 0 4px}
+input[type=text],input[type=password],input[type=number],select,textarea{width:100%;padding:12px;border:1px solid var(--ln);border-radius:10px;font:inherit;background:var(--bg);color:var(--tx)}
+textarea{min-height:120px;resize:vertical}
+.dica{color:var(--mu);font-size:.9rem;margin:2px 0 0}
+.linha{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:640px){.linha{grid-template-columns:1fr 1fr}}
+.obra{display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--ln);flex-wrap:wrap}
+.obra:last-child{border:0}
+.obra img,.obra .semfoto{width:96px;height:72px;object-fit:cover;border-radius:8px;background:var(--ln);flex:none}
+.obra .info{flex:1;min-width:160px}.obra .info b{display:block}
+.sel{display:inline-block;font-size:.78rem;padding:2px 10px;border-radius:99px;border:1px solid var(--ln);margin-right:4px;color:var(--mu)}
+.sel.ok{color:#fff;background:var(--wa);border-color:var(--wa)}.sel.vd{color:#fff;background:#8a2d2d;border-color:#8a2d2d}
+.bt{padding:9px 16px;font-size:.92rem}.bt.p{background:#8a2d2d}
+.fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:8px}
+.fotos figure{margin:0;border:1px solid var(--ln);border-radius:10px;padding:6px;text-align:center;background:var(--bg)}
+.fotos img{width:100%;height:90px;object-fit:cover;border-radius:6px}
+.fotos button{margin:4px 2px 0;font-size:.78rem;padding:5px 9px;border-radius:99px;border:1px solid var(--ln);background:transparent;color:var(--tx);cursor:pointer}
+.msg{padding:12px 16px;border-radius:10px;margin:12px 0}.msg.er{background:#8a2d2d22;border:1px solid #8a2d2d}.msg.ok{background:#1a6b3a22;border:1px solid var(--wa)}
+.oculto{display:none}
+.chk{display:flex;gap:10px;align-items:center;margin:12px 0}.chk input{width:22px;height:22px}.chk label{margin:0}
+</style></head><body>
+<div class="pw">
+<div class="topo"><h1>Painel das obras</h1><div id="acoes" class="oculto"><a class="btn o bt" href="/obras/" target="_blank" rel="noopener">Ver o site</a> <button class="btn o bt" id="sair" type="button">Sair</button></div></div>
+<div id="aviso"></div>
+
+<section id="telaLogin" class="caixa oculto">
+  <h2 style="margin-top:0">Entrar</h2>
+  <p>Digite a senha do painel para cadastrar e editar suas obras.</p>
+  <form id="fLogin"><label for="senha">Senha</label><input id="senha" type="password" autocomplete="current-password" required>
+  <p><button class="btn" type="submit">Entrar</button></p></form>
+</section>
+
+<section id="telaLista" class="oculto">
+  <div class="caixa">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0">Suas obras</h2><button class="btn" id="nova" type="button">+ Nova obra</button></div>
+    <div id="lista"></div>
+  </div>
+</section>
+
+<section id="telaForm" class="oculto">
+  <form class="caixa" id="fObra">
+    <h2 style="margin-top:0" id="tituloForm">Nova obra</h2>
+    <label for="titulo">Título da obra *</label><input id="titulo" type="text" maxlength="120" required>
+    <div class="linha">
+      <div><label for="tipo">Tipo</label><select id="tipo"></select></div>
+      <div><label for="preco">Preço em reais</label><input id="preco" type="text" inputmode="decimal" placeholder="Ex.: 1500 ou 1500,50"><p class="dica">Deixe vazio para mostrar "valor sob consulta".</p></div>
+    </div>
+    <div class="linha">
+      <div><label for="medidas">Medidas</label><input id="medidas" type="text" maxlength="80" placeholder="Ex.: 60 x 80 cm"></div>
+      <div><label for="tecnica">Técnica</label><input id="tecnica" type="text" maxlength="120" placeholder="Ex.: acrílica sobre tela"></div>
+    </div>
+    <div class="linha">
+      <div><label for="ano">Ano</label><input id="ano" type="text" maxlength="20" placeholder="Ex.: 2025"></div>
+      <div><label for="status">Situação</label><select id="status"><option value="disponivel">Disponível</option><option value="vendida">Vendida</option></select></div>
+    </div>
+    <label for="descricao">Descrição</label><textarea id="descricao" maxlength="3000" placeholder="Conte a história da obra, as cores, o que ela transmite."></textarea>
+    <p class="dica">Uma linha em branco separa os parágrafos.</p>
+    <label>Fotos (até 6, a primeira é a capa)</label>
+    <div class="fotos" id="fotos"></div>
+    <p><input id="arq" type="file" accept="image/*" multiple class="oculto"><button class="btn o bt" type="button" id="add">+ Adicionar fotos</button></p>
+    <p class="dica">As fotos são reduzidas automaticamente para o site abrir rápido.</p>
+    <div class="chk"><input id="publicada" type="checkbox" checked><label for="publicada">Mostrar esta obra no site</label></div>
+    <p><button class="btn" type="submit" id="salvar">Salvar obra</button> <button class="btn o" type="button" id="cancelar">Cancelar</button></p>
+  </form>
+</section>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let obras = [], tipos = [], atual = null, novasFotos = [];
+
+function aviso(txt, tipo) { $('#aviso').innerHTML = txt ? `<div class="msg ${tipo === 'ok' ? 'ok' : 'er'}" role="status">${txt}</div>` : ''; if (txt) window.scrollTo({ top: 0, behavior: 'smooth' }); }
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const tela = (n) => { for (const t of ['Login', 'Lista', 'Form']) $('#tela' + t).classList.toggle('oculto', t !== n); $('#acoes').classList.toggle('oculto', n === 'Login'); };
+
+async function api(caminho, opcoes = {}) {
+  const r = await fetch('/api' + caminho, { credentials: 'same-origin', ...opcoes });
+  let d = {}; try { d = await r.json(); } catch (e) {}
+  if (r.status === 401 && caminho !== '/login') { tela('Login'); throw new Error(d.erro || 'Entre com a senha.'); }
+  if (!r.ok) throw new Error(d.erro || 'Algo deu errado. Tente de novo.');
+  return d;
+}
+const jsonOpc = (metodo, corpo) => ({ method: metodo, headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) });
+
+const urlFoto = (f) => f.estatico ? `/img/${f.estatico}-480.webp` : `/f/${f.id}-p.webp`;
+
+async function carregar() {
+  const d = await api('/obras');
+  obras = d.obras; tipos = d.tipos;
+  $('#tipo').innerHTML = tipos.map((t) => `<option>${esc(t)}</option>`).join('');
+  desenharLista(); tela('Lista');
+}
+
+function desenharLista() {
+  if (!obras.length) { $('#lista').innerHTML = '<p>Você ainda não cadastrou obras. Clique em "+ Nova obra".</p>'; return; }
+  $('#lista').innerHTML = obras.map((o) => {
+    const foto = o.fotos[0] ? `<img src="${urlFoto(o.fotos[0])}" alt="">` : '<div class="semfoto"></div>';
+    const preco = o.preco ? 'R$ ' + Number(o.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : 'Valor sob consulta';
+    return `<div class="obra">${foto}<div class="info"><b>${esc(o.titulo)}</b>${esc(o.tipo)} · ${preco}<br>
+      <span class="sel ${o.publicada ? 'ok' : ''}">${o.publicada ? 'No site' : 'Escondida'}</span>${o.status === 'vendida' ? '<span class="sel vd">Vendida</span>' : ''}</div>
+      <div><button class="btn o bt" data-e="${o.id}" type="button">Editar</button> ${o.publicada ? `<a class="btn o bt" href="/obras/${o.slug}/" target="_blank" rel="noopener">Ver</a>` : ''} <button class="btn bt p" data-x="${o.id}" type="button">Excluir</button></div></div>`;
+  }).join('');
+}
+
+function abrirForm(o) {
+  atual = o ? { ...o, fotos: o.fotos.map((f) => ({ ...f })) } : { id: null, fotos: [] };
+  novasFotos = [];
+  $('#tituloForm').textContent = o ? 'Editar obra' : 'Nova obra';
+  $('#titulo').value = o?.titulo || ''; $('#tipo').value = o?.tipo || 'Tela';
+  $('#preco').value = o?.preco ? String(o.preco).replace('.', ',') : '';
+  $('#medidas').value = o?.medidas || ''; $('#tecnica').value = o?.tecnica || ''; $('#ano').value = o?.ano || '';
+  $('#status').value = o?.status || 'disponivel'; $('#descricao').value = o?.descricao || '';
+  $('#publicada').checked = o ? !!o.publicada : true;
+  desenharFotos(); tela('Form'); aviso('');
+}
+
+function desenharFotos() {
+  const ex = atual.fotos.map((f, i) => `<figure><img src="${urlFoto(f)}" alt=""><div>${i === 0 ? '<small>Capa</small>' : `<button type="button" data-capa="${f.id}">Tornar capa</button>`}<button type="button" data-rf="${f.id}">Remover</button></div></figure>`);
+  const nv = novasFotos.map((f, i) => `<figure><img src="${f.prev}" alt=""><div><small>Nova</small><button type="button" data-rn="${i}">Remover</button></div></figure>`);
+  $('#fotos').innerHTML = ex.concat(nv).join('') || '<p class="dica">Nenhuma foto ainda.</p>';
+}
+
+// Reduz a foto no navegador: versão pequena (640px) e grande (1400px), em WebP.
+function reduzir(arquivo) {
+  return new Promise((ok, erro) => {
+    const img = new Image(), u = URL.createObjectURL(arquivo);
+    img.onload = () => {
+      const gerar = (larg, q) => new Promise((res) => {
+        const esc = Math.min(1, larg / Math.max(img.width, img.height));
+        const c = document.createElement('canvas'); c.width = Math.round(img.width * esc); c.height = Math.round(img.height * esc);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob((b) => res(b), 'image/webp', q);
+      });
+      Promise.all([gerar(640, 0.78), gerar(1400, 0.82)]).then(([p, g]) => {
+        URL.revokeObjectURL(u);
+        if (!p || !g || p.type !== 'image/webp') return erro(new Error('Este navegador não conseguiu preparar a foto.'));
+        ok({ p, g, prev: URL.createObjectURL(p) });
+      });
+    };
+    img.onerror = () => erro(new Error('Não consegui abrir a foto "' + arquivo.name + '".'));
+    img.src = u;
+  });
+}
+
+$('#fLogin').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try { await api('/login', jsonOpc('POST', { senha: $('#senha').value })); $('#senha').value = ''; aviso(''); await carregar(); }
+  catch (er) { aviso(esc(er.message)); }
+});
+$('#sair').addEventListener('click', async () => { await api('/logout', { method: 'POST' }).catch(() => {}); tela('Login'); });
+$('#nova').addEventListener('click', () => abrirForm(null));
+$('#cancelar').addEventListener('click', () => { tela('Lista'); aviso(''); });
+$('#add').addEventListener('click', () => $('#arq').click());
+$('#arq').addEventListener('change', async (e) => {
+  const lim = 6 - atual.fotos.length - novasFotos.length;
+  const arqs = [...e.target.files].slice(0, Math.max(lim, 0));
+  if (e.target.files.length > arqs.length) aviso('No máximo 6 fotos por obra. Algumas não foram adicionadas.');
+  $('#add').disabled = true;
+  for (const a of arqs) { try { novasFotos.push(await reduzir(a)); } catch (er) { aviso(esc(er.message)); } }
+  $('#add').disabled = false; e.target.value = ''; desenharFotos();
+});
+$('#fotos').addEventListener('click', async (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  try {
+    if (b.dataset.rn) { novasFotos.splice(Number(b.dataset.rn), 1); desenharFotos(); }
+    else if (b.dataset.rf) { if (!confirm('Remover esta foto?')) return; await api('/fotos/' + b.dataset.rf, { method: 'DELETE' }); atual.fotos = atual.fotos.filter((f) => String(f.id) !== b.dataset.rf); desenharFotos(); }
+    else if (b.dataset.capa) { await api('/fotos/' + b.dataset.capa + '/capa', { method: 'POST' }); const i = atual.fotos.findIndex((f) => String(f.id) === b.dataset.capa); atual.fotos.unshift(atual.fotos.splice(i, 1)[0]); desenharFotos(); }
+  } catch (er) { aviso(esc(er.message)); }
+});
+$('#lista').addEventListener('click', async (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.e) abrirForm(obras.find((o) => String(o.id) === b.dataset.e));
+  if (b.dataset.x) {
+    const o = obras.find((x) => String(x.id) === b.dataset.x);
+    if (!confirm('Excluir a obra "' + o.titulo + '" e suas fotos? Não dá para desfazer.')) return;
+    try { await api('/obras/' + o.id, { method: 'DELETE' }); await carregar(); aviso('Obra excluída.', 'ok'); } catch (er) { aviso(esc(er.message)); }
+  }
+});
+$('#fObra').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const corpo = { titulo: $('#titulo').value, tipo: $('#tipo').value, preco: $('#preco').value, medidas: $('#medidas').value, tecnica: $('#tecnica').value, ano: $('#ano').value, status: $('#status').value, descricao: $('#descricao').value, publicada: $('#publicada').checked };
+  $('#salvar').disabled = true; $('#salvar').textContent = 'Salvando...';
+  try {
+    let id = atual.id;
+    if (id) await api('/obras/' + id, jsonOpc('PUT', corpo)); else id = (await api('/obras', jsonOpc('POST', corpo))).id;
+    for (const f of novasFotos) {
+      const fd = new FormData(); fd.append('p', f.p, 'p.webp'); fd.append('g', f.g, 'g.webp');
+      await api('/obras/' + id + '/fotos', { method: 'POST', body: fd });
+    }
+    await carregar(); aviso('Obra salva! Ela já aparece no site.', 'ok');
+  } catch (er) { aviso(esc(er.message)); }
+  $('#salvar').disabled = false; $('#salvar').textContent = 'Salvar obra';
+});
+
+carregar().catch(() => tela('Login'));
+</script>
+</body></html>

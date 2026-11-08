@@ -75,11 +75,11 @@ def faq_html(lista):
 # ---------- layout ----------
 NAV = [("Obras", "/obras/"), ("Sobre a artista", "/sobre/"), ("Blog", "/blog/"), ("Contato", "/contato/")]
 
-def pagina(url, titulo, desc, corpo, ld, og="/img/og.jpg", ativo=None, tipo="website", extra_head=""):
+def pagina(url, titulo, desc, corpo, ld, og="/img/og.jpg", ativo=None, tipo="website", extra_head="", raw_title=False):
     canon = DOM + url
     nav = "".join(f'<li><a href="{u}"{" aria-current=page" if u == ativo else ""}>{n}</a></li>' for n, u in NAV)
     robots = "index,follow,max-image-preview:large" if PROD else "noindex,nofollow"
-    t = titulo if "Wil Catarina" in titulo else f"{titulo} | {S['nome_site']}"
+    t = titulo if (raw_title or "Wil Catarina" in titulo) else f"{titulo} | {S['nome_site']}"
     return f"""<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -152,11 +152,11 @@ def pg_obras():
     cards = "".join(card(o) for o in S["obras"])
     corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › Obras</p><h1>Obras de Wil Catarina</h1>
 <div class="resp"><strong>Resposta rápida:</strong> aqui você vê telas e esculturas da artista visual Wil Catarina (Niterói, RJ). Clique na obra para ver os detalhes e peça pelo WhatsApp: a conversa vai direto para a artista.</div>
-<div class="grade">{cards}</div>
+<div class="grade"><!--OBRAS-->{cards}<!--/OBRAS--></div>
 <h2>Dúvidas frequentes</h2>{faq_html(S['faq'][:4])}</div>"""
     ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
           {"@type": "CollectionPage", "name": "Obras de Wil Catarina", "url": DOM + "/obras/", "about": {"@id": PESSOA_ID},
-           "mainEntity": {"@type": "ItemList", "itemListElement": [{"@type": "ListItem", "position": i + 1, "url": f"{DOM}/obras/{o['slug']}/", "name": o["titulo"]} for i, o in enumerate(S["obras"])]}},
+           "mainEntity": {"@type": "ItemList", "itemListElement": "__ITEMS__"}},
           faq_ld(S["faq"][:4]), crumb_ld([("Início", "/"), ("Obras", "/obras/")])]
     gravar("/obras/", pagina("/obras/", "Obras de Wil Catarina — telas e esculturas", "Telas e esculturas da artista visual Wil Catarina, de Niterói (RJ). Veja as obras e peça pelo WhatsApp.", corpo, ld, ativo="/obras/"))
 
@@ -169,7 +169,7 @@ def pg_home():
 <p><a class="btn" href="/obras/">Ver as obras</a> <a class="btn o" href="{wa('Olá, Wil! Vi seu site e gostaria de conversar sobre suas obras.')}" rel="noopener">Falar no WhatsApp</a></p></div>
 <div>{pic('tela-01', 'Tela 01, pintura abstrata amarela e laranja de Wil Catarina', 1400, 785, prio=True)}</div></section>
 <div class="resp"><strong>Wil Catarina</strong> é artista visual e curadora de Niterói (RJ). Cria pinturas, desenhos e esculturas que incorporam elementos da natureza e já expôs no Museu de Arte Contemporânea (MAC), em galerias e em espaços culturais do Rio de Janeiro.</div>
-<h2>Obras disponíveis</h2><div class="grade">{cards}</div>
+<h2>Obras disponíveis</h2><div class="grade"><!--OBRAS-->{cards}<!--/OBRAS--></div>
 <p><a href="/obras/">Ver todas as obras »</a></p></div>
 <section class="faixa"><div class="w"><div class="hero" style="padding:0"><div class="ph-wrap">{pic('wil', 'Wil Catarina, artista visual, segurando uma pequena escultura', 712, 827, (480, 712), '(min-width:800px) 480px, 100vw').replace('<img ','<img class="ph" style="max-width:420px;width:100%" ')}</div>
 <div><h2 style="margin-top:0">Sobre a artista</h2><p>“{e(S['frase'])}” A obra de Wil nasce do diálogo entre razão e sensibilidade, com olhar atento ao corpo, ao tempo e à matéria. É graduada em Artes pela UFF e faz oficinas e workshops para compartilhar seu processo.</p><p><a href="/sobre/">Conheça a trajetória »</a></p></div></div></div></section>
@@ -272,7 +272,7 @@ def tecnicos(urls):
     hoje = "2026-11-07"
     sm = "".join(f"<url><loc>{DOM}{u}</loc><lastmod>{hoje}</lastmod></url>" for u in urls)
     (SAIDA / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{sm}</urlset>', encoding="utf8")
-    (SAIDA / "robots.txt").write_text(("User-agent: *\nAllow: /\n" if PROD else "User-agent: *\nDisallow: /\n") + f"\nSitemap: {DOM}/sitemap.xml\n", encoding="utf8")
+    (SAIDA / "robots.txt").write_text(("User-agent: *\nAllow: /\nDisallow: /painel/\nDisallow: /api/\n" if PROD else "User-agent: *\nDisallow: /\n") + f"\nSitemap: {DOM}/sitemap.xml\n", encoding="utf8")
     obras = "\n".join(f"- [{o['titulo']}]({DOM}/obras/{o['slug']}/): {o['resumo']}" for o in S["obras"])
     blog = "\n".join(f"- [{p['titulo']}]({DOM}/blog/{p['slug']}/)" for p in BLOG)
     (SAIDA / "llms.txt").write_text(f"# Wil Catarina Artes\n\n> {S['descricao']}\n\nWil Catarina é artista visual e curadora de Niterói (RJ), graduada em Artes pela UFF. As obras são vendidas pelo WhatsApp {S['whatsapp_exibir']}.\n\n## Obras\n{obras}\n\n## Páginas\n- [Sobre a artista]({DOM}/sobre/)\n- [Contato]({DOM}/contato/)\n\n## Blog\n{blog}\n", encoding="utf8")
@@ -286,6 +286,23 @@ def og():
     top = (h - nh) // 2
     im.crop((0, max(top, 0), w, max(top, 0) + min(nh, h))).resize((1200, 630)).save(SAIDA / "img/og.jpg", quality=82, optimize=True)
 
+def modelos():
+    """Moldura (cabecalho/rodape) e dados para o Worker montar as paginas das obras."""
+    d = SAIDA / "_tpl"
+    d.mkdir(parents=True, exist_ok=True)
+    shell = pagina("{{URL}}", "{{TITLE}}", "{{DESC}}", "{{BODY}}", [], og="{{OG}}", ativo="/obras/", tipo="product", raw_title=True)
+    shell = re.sub(r'<script type="application/ld[+]json">.*?</script>', "{{LD}}", shell, flags=re.S)
+    shell = shell.replace(DOM + "{{OG}}", "{{OG}}").replace(DOM + "{{URL}}", "{{URL}}")
+    (d / "moldura.html").write_text(shell, encoding="utf8")
+    cfg = {"dominio": DOM, "whatsapp": S["whatsapp"], "nome": S["nome"], "nome_site": S["nome_site"], "pessoa": pessoa(),
+           "site_id": SITE_ID, "pessoa_id": PESSOA_ID}
+    (d / "config.json").write_text(json.dumps(cfg, ensure_ascii=False), encoding="utf8")
+
+def painel():
+    d = SAIDA / "painel"
+    d.mkdir(parents=True, exist_ok=True)
+    shutil.copy(RAIZ / "painel/index.html", d / "index.html")
+
 def main():
     if SAIDA.exists():
         shutil.rmtree(SAIDA)
@@ -297,10 +314,10 @@ def main():
         webp(p["imagem"] + ".png", p["imagem"], tam)
     webp("wil.jpg", "wil", (480, 712))
     og()
-    pg_home(); pg_obras(); pg_sobre(); pg_blog(); pg_contato(); pg_404()
+    modelos(); painel(); pg_home(); pg_obras(); pg_sobre(); pg_blog(); pg_contato(); pg_404()
     for o in S["obras"]:
         pg_obra(o)
-    urls = ["/", "/obras/", "/sobre/", "/blog/", "/contato/"] + [f"/obras/{o['slug']}/" for o in S["obras"]] + [f"/blog/{p['slug']}/" for p in BLOG]
+    urls = ["/", "/obras/", "/sobre/", "/blog/", "/contato/"] + [f"/blog/{p['slug']}/" for p in BLOG]
     tecnicos(urls)
     print(("PRODUÇÃO" if PROD else "TESTE (noindex)"), "-", len(urls), "páginas")
 
