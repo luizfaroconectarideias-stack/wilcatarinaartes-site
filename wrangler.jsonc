@@ -7,7 +7,7 @@
   "assets": {
     "directory": "site",
     "binding": "ASSETS",
-    "run_worker_first": ["/", "/obras", "/obras/*", "/api/*", "/f/*", "/_tpl/*", "/sitemap.xml"]
+    "run_worker_first": ["/*", "!/img/*", "!/favicon.svg"]
   },
   "d1_databases": [
     { "binding": "DB", "database_name": "wilcatarinaartes-painel", "database_id": "4f792e7d-e565-453e-9e39-e46a5c4f807f", "migrations_dir": "migracoes" }

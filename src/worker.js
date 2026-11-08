@@ -15,6 +15,10 @@ export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     const p = url.pathname;
+    if (url.hostname.startsWith("www.")) {
+      url.hostname = url.hostname.slice(4);
+      return Response.redirect(url.toString(), 301);
+    }
     try {
       if (p.startsWith("/api/")) return await api(req, env, url);
       if (p.startsWith("/f/")) return await foto(env, p);

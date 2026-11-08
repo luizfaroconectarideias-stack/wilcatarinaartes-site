@@ -2,6 +2,7 @@
 """Gerador estático de wilcatarinaartes.com.br. Uso: python gerador/gerar.py [--producao]
 Saída em site/. Teste = noindex; --producao libera os buscadores."""
 import json, shutil, sys, html, re
+import markdown
 from pathlib import Path
 from urllib.parse import quote
 from PIL import Image
@@ -12,6 +13,7 @@ PROD = "--producao" in sys.argv
 S = json.loads((RAIZ / "dados/site.json").read_text(encoding="utf8"))
 BLOG = json.loads((RAIZ / "dados/blog.json").read_text(encoding="utf8"))
 DOM = S["dominio"]
+HOJE = "2026-11-07"
 e = html.escape
 
 # ---------- imagens ----------
@@ -57,6 +59,8 @@ def pessoa():
         "address": {"@type": "PostalAddress", "addressLocality": S["cidade"], "addressRegion": S["uf"], "addressCountry": "BR"},
         "alumniOf": {"@type": "CollegeOrUniversity", "name": "Universidade Federal Fluminense"},
         "knowsAbout": ["Artes visuais", "Pintura", "Escultura", "Curadoria de arte", "Arte contemporânea"],
+        "description": "Artista visual e curadora de Niterói (RJ). Cria pinturas, desenhos e esculturas inspirados na natureza e expõe em museus, galerias e espaços culturais do Rio de Janeiro.",
+        "workLocation": {"@type": "Place", "name": "Niterói, RJ"},
     }
 
 def jl(objs):
@@ -73,13 +77,25 @@ def faq_html(lista):
     return "".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in lista)
 
 # ---------- layout ----------
-NAV = [("Obras", "/obras/"), ("Sobre a artista", "/sobre/"), ("Blog", "/blog/"), ("Contato", "/contato/")]
+NAV = [("Obras", "/obras/"), ("Sobre a artista", "/sobre/"), ("Glossário", "/glossario/"), ("Onde expor", "/onde-expor-arte-rj/"), ("Blog", "/blog/"), ("Contato", "/contato/")]
+CSS = re.sub(r"\s+", " ", re.sub(r"/\*.*?\*/", "", (RAIZ / "estilo/estilo.css").read_text(encoding="utf8"), flags=re.S)).replace(" {", "{").replace("{ ", "{").replace("; ", ";").replace(": ", ":")
+
+def meta_desc(t, n=158):
+    t = re.sub(r"\s+", " ", t).strip()
+    if len(t) <= n:
+        return t
+    return t[:n].rsplit(" ", 1)[0].rstrip(",;:.") + "…"
 
 def pagina(url, titulo, desc, corpo, ld, og="/img/og.jpg", ativo=None, tipo="website", extra_head="", raw_title=False):
     canon = DOM + url
     nav = "".join(f'<li><a href="{u}"{" aria-current=page" if u == ativo else ""}>{n}</a></li>' for n, u in NAV)
     robots = "index,follow,max-image-preview:large" if PROD else "noindex,nofollow"
-    t = titulo if (raw_title or "Wil Catarina" in titulo) else f"{titulo} | {S['nome_site']}"
+    if raw_title or "Wil Catarina" in titulo:
+        t = titulo
+    else:
+        t = f"{titulo} | {S['nome_site']}"
+        if len(t) > 66:
+            t = titulo
     return f"""<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -92,7 +108,10 @@ def pagina(url, titulo, desc, corpo, ld, og="/img/og.jpg", ativo=None, tipo="web
 <meta property="og:type" content="{tipo}"><meta property="og:locale" content="pt_BR"><meta property="og:site_name" content="{S['nome_site']}">
 <meta property="og:title" content="{e(t)}"><meta property="og:description" content="{e(desc)}"><meta property="og:url" content="{canon}">
 <meta property="og:image" content="{DOM}{og}"><meta name="twitter:card" content="summary_large_image">
-<link rel="stylesheet" href="/estilo.css">
+<meta name="author" content="Wil Catarina">
+<link rel="alternate" type="application/rss+xml" title="Blog de Wil Catarina" href="/feed.xml">
+<meta property="og:image:alt" content="{e(t)}">
+<style>{CSS}</style>
 {extra_head}{jl(ld)}
 </head><body>
 <a class="skip" href="#c">Ir para o conteúdo</a>
@@ -105,7 +124,7 @@ def pagina(url, titulo, desc, corpo, ld, og="/img/og.jpg", ativo=None, tipo="web
 <footer><div class="w fcols">
 <div><strong>Wil Catarina</strong><br>Artista visual e curadora<br>{S['cidade']} · {S['uf']}</div>
 <div><a href="{wa('Olá, Wil! Vi seu site.')}" rel="noopener">WhatsApp {S['whatsapp_exibir']}</a><br><a href="mailto:{S['email']}">{S['email']}</a><br><a href="{S['instagram']}" rel="me noopener">Instagram @wilcatarina</a> · <a href="{S['facebook']}" rel="me noopener">Facebook</a></div>
-<div><a href="/obras/">Obras</a> · <a href="/sobre/">Sobre</a> · <a href="/blog/">Blog</a> · <a href="/contato/">Contato</a><br>© {S['nome_site']}. Todas as obras são de autoria de Wil Catarina.</div>
+<div><a href="/obras/">Obras</a> · <a href="/sobre/">Sobre</a> · <a href="/glossario/">Glossário</a> · <a href="/onde-expor-arte-rj/">Onde expor</a> · <a href="/blog/">Blog</a> · <a href="/contato/">Contato</a><br><a href="/politica-de-privacidade/">Privacidade</a> · <a href="/termos-de-uso/">Termos de uso</a> · <a href="/acessibilidade/">Acessibilidade</a><br>© {S['nome_site']}. Todas as obras são de autoria de Wil Catarina.</div>
 </div></footer>
 <a class="btn flut" href="{wa('Olá, Wil! Vi seu site e gostaria de conversar sobre suas obras.')}" rel="noopener" aria-label="Falar no WhatsApp">Falar no WhatsApp</a>
 </body></html>"""
@@ -162,6 +181,7 @@ def pg_obras():
 
 # ---------- home ----------
 def pg_home():
+    gl_cards = "".join(f'<li><a href="{t["url"]}">{e(t["termo"].capitalize())}</a>: {e(t["resumo"].split(". ")[0].rstrip("."))}.</li>' for t in TERMOS[:6])
     cards = "".join(card(o) for o in S["obras"])
     posts = "".join(f'<li><a href="/blog/{p["slug"]}/">{e(p["titulo"])}</a></li>' for p in BLOG)
     corpo = f"""<div class="w"><section class="hero"><div><p class="kick">Artista visual · Niterói, RJ</p><h1>Telas e esculturas de Wil Catarina</h1>
@@ -173,12 +193,13 @@ def pg_home():
 <p><a href="/obras/">Ver todas as obras »</a></p></div>
 <section class="faixa"><div class="w"><div class="hero" style="padding:0"><div class="ph-wrap">{pic('wil', 'Wil Catarina, artista visual, segurando uma pequena escultura', 712, 827, (480, 712), '(min-width:800px) 480px, 100vw').replace('<img ','<img class="ph" style="max-width:420px;width:100%" ')}</div>
 <div><h2 style="margin-top:0">Sobre a artista</h2><p>“{e(S['frase'])}” A obra de Wil nasce do diálogo entre razão e sensibilidade, com olhar atento ao corpo, ao tempo e à matéria. É graduada em Artes pela UFF e faz oficinas e workshops para compartilhar seu processo.</p><p><a href="/sobre/">Conheça a trajetória »</a></p></div></div></div></section>
-<div class="w"><h2>Do blog</h2><ul class="lista">{posts}</ul>
+<div class="w"><h2>Glossário de arte</h2><ul class="lista">{gl_cards}</ul><p><a href="/glossario/">Ver os 20 termos do glossário »</a></p><h2>Onde expor arte no Rio de Janeiro</h2><p>Museus, galerias e centros culturais do estado, organizados por cidade. <a href="/onde-expor-arte-rj/">Ver locais de exposição »</a></p><h2>Do blog</h2><ul class="lista">{posts}</ul>
 <h2>Dúvidas frequentes</h2>{faq_html(S['faq'])}</div>"""
     ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR", "publisher": {"@id": PESSOA_ID}},
           pessoa(), {"@type": "WebPage", "url": DOM + "/", "name": "Wil Catarina Artes", "about": {"@id": PESSOA_ID}, "isPartOf": {"@id": SITE_ID},
                      "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".resp", "h1"]}}, faq_ld(S["faq"])]
-    gravar("/", pagina("/", "Wil Catarina — artista visual em Niterói | Telas e esculturas", S["descricao"], corpo, ld))
+    pre = '<link rel="preload" as="image" href="/img/tela-01-1400.webp" imagesrcset="/img/tela-01-480.webp 480w, /img/tela-01-900.webp 900w, /img/tela-01-1400.webp 1400w" imagesizes="(min-width:800px) 560px, 100vw" fetchpriority="high">'
+    gravar("/", pagina("/", "Wil Catarina — artista visual em Niterói | Telas e esculturas", S["descricao"], corpo, ld, extra_head=pre))
 
 # ---------- sobre ----------
 def pg_sobre():
@@ -215,15 +236,15 @@ def pg_blog():
         url = f"/blog/{p['slug']}/"
         pars = "".join(f"<p>{x}</p>" for x in p["paragrafos"])
         corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › <a href="/blog/">Blog</a></p><article class="art"><h1>{e(p['titulo'])}</h1>
-<p class="cons">Por Wil Catarina · {meses(p['data'])}</p>{pic(p['imagem'], p['titulo'], 1400, 785, sizes='(min-width:800px) 760px, 100vw', prio=True).replace('<img ', '<img class="ph" ')}
+<p class="cons">Por <a href="/sobre/">Wil Catarina</a>, artista visual e curadora · Publicado em {meses(p['data'])}</p>{pic(p['imagem'], p['titulo'], 1400, 785, sizes='(min-width:800px) 760px, 100vw', prio=True).replace('<img ', '<img class="ph" ')}
 <div class="resp"><strong>Resposta rápida:</strong> {e(p['resumo'])}</div>{pars}
-<p><a class="btn" href="{wa('Olá, Wil! Li seu texto no blog e gostaria de conversar.')}" rel="noopener">Conversar com a Wil</a> <a class="btn o" href="/obras/">Ver as obras</a></p></article></div>"""
+{termos_do_post(p["slug"])}<p><a class="btn" href="{wa('Olá, Wil! Li seu texto no blog e gostaria de conversar.')}" rel="noopener">Conversar com a Wil</a> <a class="btn o" href="/obras/">Ver as obras</a></p></article></div>"""
         ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
               {"@type": "BlogPosting", "headline": p["titulo"], "description": p["resumo"], "datePublished": p["data"], "dateModified": p["data"], "inLanguage": "pt-BR",
                "image": f"{DOM}/img/{p['imagem']}-1400.webp", "mainEntityOfPage": DOM + url, "author": {"@id": PESSOA_ID}, "publisher": {"@id": PESSOA_ID},
                "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".resp", "h1"]}},
               crumb_ld([("Início", "/"), ("Blog", "/blog/"), (p["titulo"], url)])]
-        gravar(url, pagina(url, p["titulo"], p["resumo"], corpo, ld, og=f"/img/{p['imagem']}-1400.webp", ativo="/blog/", tipo="article"))
+        gravar(url, pagina(url, p.get("titulo_seo", p["titulo"]), meta_desc(p["resumo"]), corpo, ld, og=f"/img/{p['imagem']}-1400.webp", ativo="/blog/", tipo="article"))
 
 # ---------- contato / 404 ----------
 def pg_contato():
@@ -272,10 +293,11 @@ def tecnicos(urls):
     hoje = "2026-11-07"
     sm = "".join(f"<url><loc>{DOM}{u}</loc><lastmod>{hoje}</lastmod></url>" for u in urls)
     (SAIDA / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{sm}</urlset>', encoding="utf8")
-    (SAIDA / "robots.txt").write_text(("User-agent: *\nAllow: /\nDisallow: /painel/\nDisallow: /api/\n" if PROD else "User-agent: *\nDisallow: /\n") + f"\nSitemap: {DOM}/sitemap.xml\n", encoding="utf8")
+    (SAIDA / "robots.txt").write_text(("User-agent: *\nAllow: /\nDisallow: /painel/\nDisallow: /api/\n\n" + "".join(f"User-agent: {b}\nAllow: /\nDisallow: /painel/\nDisallow: /api/\n\n" for b in ("GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-User", "Claude-SearchBot", "PerplexityBot", "Google-Extended", "Applebot-Extended", "CCBot")) if PROD else "User-agent: *\nDisallow: /\n") + f"\nSitemap: {DOM}/sitemap.xml\n", encoding="utf8")
     obras = "\n".join(f"- [{o['titulo']}]({DOM}/obras/{o['slug']}/): {o['resumo']}" for o in S["obras"])
     blog = "\n".join(f"- [{p['titulo']}]({DOM}/blog/{p['slug']}/)" for p in BLOG)
-    (SAIDA / "llms.txt").write_text(f"# Wil Catarina Artes\n\n> {S['descricao']}\n\nWil Catarina é artista visual e curadora de Niterói (RJ), graduada em Artes pela UFF. As obras são vendidas pelo WhatsApp {S['whatsapp_exibir']}.\n\n## Obras\n{obras}\n\n## Páginas\n- [Sobre a artista]({DOM}/sobre/)\n- [Contato]({DOM}/contato/)\n\n## Blog\n{blog}\n", encoding="utf8")
+    gl = "\n".join(f"- [{t['termo']}]({DOM}{t['url']}): {t['resumo']}" for t in TERMOS)
+    (SAIDA / "llms.txt").write_text(f"# Wil Catarina Artes\n\n> {S['descricao']}\n\nWil Catarina é artista visual e curadora de Niterói (RJ), graduada em Artes pela UFF. As obras são vendidas pelo WhatsApp {S['whatsapp_exibir']}.\n\n## Obras\n{obras}\n\n## Páginas\n- [Sobre a artista]({DOM}/sobre/)\n- [Contato]({DOM}/contato/)\n\n## Glossário de arte\n{gl}\n\n## Blog\n{blog}\n\nVersão completa em texto: {DOM}/llms-full.txt\n", encoding="utf8")
     (SAIDA / "favicon.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#8a5a12"/><text x="32" y="43" font-family="Georgia,serif" font-size="30" font-weight="700" fill="#faf7f2" text-anchor="middle">WC</text></svg>', encoding="utf8")
     shutil.copy(RAIZ / "estilo/estilo.css", SAIDA / "estilo.css")
 
@@ -303,6 +325,265 @@ def painel():
     d.mkdir(parents=True, exist_ok=True)
     shutil.copy(RAIZ / "painel/index.html", d / "index.html")
 
+
+# ---------- glossário e páginas institucionais ----------
+def ler_md(arq):
+    txt = arq.read_text(encoding="utf8")
+    _, fm, corpo = txt.split("---", 2)
+    meta = {}
+    for ln in fm.strip().splitlines():
+        k, _, v = ln.partition(":")
+        meta[k.strip()] = v.strip()
+    return meta, corpo.strip()
+
+def md(t):
+    return markdown.markdown(t, extensions=["tables", "sane_lists"])
+
+def fontes_lista(txt):
+    out = []
+    for f in [x.strip() for x in txt.split(" ; " if " ; " in txt else ";") if x.strip()]:
+        nome, _, u = f.rpartition("|")
+        out.append((nome.strip(), u.strip()))
+    return out
+
+TERMOS = []
+def carregar_termos():
+    for arq in sorted((RAIZ / "dados/glossario").glob("*.md")):
+        m, corpo = ler_md(arq)
+        corpo_md, _, faq_md = corpo.partition("## Perguntas frequentes")
+        faq = []
+        for bloco in faq_md.split("### ")[1:]:
+            q, _, a = bloco.partition("\n")
+            faq.append((q.strip(), " ".join(a.split())))
+        slug = "o-que-e-" + arq.stem
+        TERMOS.append(dict(meta=m, arq=arq.stem, slug=slug, url=f"/glossario/{slug}/", termo=m["termo"], titulo_seo=m["titulo_seo"], resumo=m["resumo"],
+                           sin=[x.strip() for x in m.get("sinonimos", "").split(",") if x.strip()], rel=[x.strip() for x in m.get("relacionados", "").split(",") if x.strip()],
+                           fontes=fontes_lista(m.get("fontes", "")) if m.get("fontes") else [], blog=m.get("blog", ""), atualizado=m["atualizado"],
+                           html=md(corpo_md), faq=faq))
+    TERMOS.sort(key=lambda t: t["termo"].lower().replace("á", "a").replace("é", "e").replace("ê", "e").replace("í", "i").replace("ó", "o").replace("ç", "c").replace("ú", "u"))
+
+def termo_por_arq(a):
+    return next((t for t in TERMOS if t["arq"] == a), None)
+
+def termos_do_post(slug):
+    ts = [t for t in TERMOS if t["blog"] == slug]
+    if not ts:
+        return ""
+    return '<h2>Termos de arte neste texto</h2><ul class="lista">' + "".join(f'<li><a href="{t["url"]}">{e(t["termo"].capitalize())}</a>: {e(t["resumo"].split(". ")[0].rstrip("."))}.</li>' for t in ts) + "</ul>"
+
+def pg_glossario():
+    def nome(t):
+        return t["termo"].split(" (")[0]
+    itens = "".join(f'<li><a href="{t["url"]}"><strong>{e(nome(t).capitalize())}</strong></a>: {e(t["resumo"])}</li>' for t in TERMOS)
+    corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › Glossário</p><div class="art" style="max-width:860px"><h1>Glossário de arte: {len(TERMOS)} termos explicados</h1>
+<div class="resp"><strong>Resposta rápida:</strong> este glossário explica, em linguagem simples, termos de arte que aparecem em exposições, galerias e na compra de obras, como curadoria, vernissage, proveniência, técnica mista e moldura de conservação.</div>
+<ul class="lista">{itens}</ul>
+<p>Quer ver arte de perto? Conheça as <a href="/obras/">obras de Wil Catarina</a> ou descubra <a href="/onde-expor-arte-rj/">onde ver e expor arte no Rio de Janeiro</a>.</p></div></div>"""
+    ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
+          {"@type": "DefinedTermSet", "@id": DOM + "/glossario/#set", "name": "Glossário de arte", "url": DOM + "/glossario/", "inLanguage": "pt-BR",
+           "hasDefinedTerm": [{"@type": "DefinedTerm", "name": nome(t), "description": t["resumo"], "url": DOM + t["url"]} for t in TERMOS]},
+          {"@type": "CollectionPage", "name": "Glossário de arte", "url": DOM + "/glossario/", "about": {"@id": DOM + "/glossario/#set"}, "publisher": {"@id": PESSOA_ID},
+           "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".resp", "h1"]}}, crumb_ld([("Início", "/"), ("Glossário", "/glossario/")])]
+    gravar("/glossario/", pagina("/glossario/", "Glossário de arte: 20 termos explicados de forma simples", f"{len(TERMOS)} termos de arte explicados em linguagem simples: curadoria, vernissage, proveniência, fine art, técnica mista, moldura de conservação e mais.", corpo, ld, ativo="/glossario/"))
+    for t in TERMOS:
+        rel = [termo_por_arq(a) for a in t["rel"]]
+        rel = [r for r in rel if r]
+        faq = faq_html(t["faq"])
+        fontes = ""
+        if t["fontes"]:
+            fontes = '<h2>Fontes</h2><ul class="lista">' + "".join(f'<li><a href="{u}" rel="noopener">{e(n)}</a></li>' for n, u in t["fontes"]) + "</ul>"
+        veja = '<h2>Veja também</h2><ul class="lista">' + "".join(f'<li><a href="{r["url"]}">{e(r["termo"].split(" (")[0].capitalize())}</a>: {e(r["resumo"].split(". ")[0].rstrip("."))}.</li>' for r in rel) + "</ul>" if rel else ""
+        blogl = ""
+        if t["blog"]:
+            bp = next((p for p in BLOG if p["slug"] == t["blog"]), None)
+            if bp:
+                blogl = f'<p>Leia também no blog: <a href="/blog/{bp["slug"]}/">{e(bp["titulo"])}</a>.</p>'
+        h1 = "O que é " + t["termo"].split(" (")[0] + "?"
+        corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › <a href="/glossario/">Glossário</a> › {e(t['termo'].split(' (')[0].capitalize())}</p><article class="art"><h1>{e(h1)}</h1>
+<p class="cons">Glossário de arte · <a href="/sobre/">Wil Catarina Artes</a> · Atualizado em {meses(t['atualizado'])}</p>
+<div class="resp"><strong>Resposta rápida:</strong> {e(t['resumo'])}</div>
+{t['html']}{blogl}<h2>Perguntas frequentes</h2>{faq}{veja}{fontes}
+<p><a class="btn o" href="/glossario/">Voltar ao glossário</a> <a class="btn" href="/obras/">Ver as obras</a></p></article></div>"""
+        ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
+              {"@type": "DefinedTerm", "@id": DOM + t["url"] + "#termo", "name": t["termo"].split(" (")[0], "description": t["resumo"], "url": DOM + t["url"], "inDefinedTermSet": DOM + "/glossario/#set",
+               **({"alternateName": t["sin"]} if t["sin"] else {})},
+              {"@type": "WebPage", "@id": DOM + t["url"], "name": h1, "url": DOM + t["url"], "inLanguage": "pt-BR", "datePublished": t["atualizado"], "dateModified": t["atualizado"],
+               "isPartOf": {"@id": SITE_ID}, "publisher": {"@id": PESSOA_ID}, "mainEntity": {"@id": DOM + t["url"] + "#termo"},
+               "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".resp", "h1"]},
+               **({"citation": [{"@type": "CreativeWork", "name": n, "url": u} for n, u in t["fontes"]]} if t["fontes"] else {})},
+              faq_ld(t["faq"]), crumb_ld([("Início", "/"), ("Glossário", "/glossario/"), (t["termo"].split(" (")[0].capitalize(), t["url"])])]
+        gravar(t["url"], pagina(t["url"], t["titulo_seo"], meta_desc(t["resumo"]), corpo, ld, ativo="/glossario/", tipo="article"))
+
+PAGINAS_LEGAIS = [("politica-de-privacidade", "Política de Privacidade"), ("termos-de-uso", "Termos de Uso"), ("acessibilidade", "Acessibilidade")]
+def pgs_legais():
+    for slug, nome in PAGINAS_LEGAIS:
+        m, corpo = ler_md(RAIZ / f"dados/paginas/{slug}.md")
+        url = f"/{slug}/"
+        c = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › {e(m['titulo'])}</p><article class="art"><h1>{e(m['titulo'])}</h1>
+<p class="cons">Atualizado em {meses(m['atualizado'])}</p><div class="resp">{e(m['resumo'])}</div>{md(corpo)}</article></div>"""
+        ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
+              {"@type": "WebPage", "name": m["titulo"], "url": DOM + url, "inLanguage": "pt-BR", "dateModified": m["atualizado"], "isPartOf": {"@id": SITE_ID}},
+              crumb_ld([("Início", "/"), (m["titulo"], url)])]
+        gravar(url, pagina(url, m["titulo_seo"], meta_desc(m["resumo"]), c, ld, raw_title=True))
+
+def feed():
+    itens = "".join(f"<item><title>{e(p['titulo'])}</title><link>{DOM}/blog/{p['slug']}/</link><guid>{DOM}/blog/{p['slug']}/</guid><pubDate>Fri, 29 May 2026 12:00:00 +0000</pubDate><description>{e(p['resumo'])}</description></item>" for p in BLOG)
+    (SAIDA / "feed.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Blog de Wil Catarina</title><link>{DOM}/blog/</link><description>Textos sobre arte, curadoria e colecionismo.</description><language>pt-BR</language>{itens}</channel></rss>', encoding="utf8")
+
+def llms_full():
+    partes = [f"# Wil Catarina Artes — conteúdo completo\n\n> {S['descricao']}\n\nSite: {DOM}\nArtista: Wil Catarina, artista visual e curadora de Niterói (RJ). Contato: {S['email']} · WhatsApp {S['whatsapp_exibir']}\n"]
+    partes.append("## Perguntas frequentes\n" + "\n".join(f"- **{q}** {a}" for q, a in S["faq"]))
+    partes.append("## Glossário de arte")
+    for t in TERMOS:
+        partes.append(f"### {t['termo']}\nURL: {DOM}{t['url']}\n{t['resumo']}\n" + "\n".join(f"- **{q}** {a}" for q, a in t["faq"]))
+    partes.append("## Blog")
+    for p in BLOG:
+        partes.append(f"### {p['titulo']}\nURL: {DOM}/blog/{p['slug']}/\n{p['resumo']}")
+    (SAIDA / "llms-full.txt").write_text("\n\n".join(partes) + "\n", encoding="utf8")
+
+
+# ---------- onde expor arte: página-mãe e páginas por cidade ----------
+SEM_ACENTO = str.maketrans("áàâãäéèêëíìîïóòôõöúùûüçñ", "aaaaaeeeeiiiiooooouuuucn")
+def slug_de(t):
+    return re.sub(r"[^a-z0-9]+", "-", t.lower().translate(SEM_ACENTO)).strip("-")
+
+TIPO_ORDEM = ["Museu", "Galeria de arte", "Centro de arte", "Centro cultural", "Espaço cultural"]
+LOCAIS = []
+def carregar_locais():
+    f = RAIZ / "dados/locais_bruto.json"
+    if not f.exists():
+        return
+    vistos = set()
+    ajustes = {}
+    fa = RAIZ / "dados/locais_ajustes.json"
+    if fa.exists():
+        ajustes = json.loads(fa.read_text(encoding="utf8"))
+    for x in json.loads(f.read_text(encoding="utf8")):
+        chave = x.get("feature_id") or (x["nome"], x["endereco"])
+        if chave in vistos or x["nome"] in ajustes.get("excluir", []):
+            continue
+        vistos.add(chave)
+        x["tipo"] = ajustes.get("tipo", {}).get(x["nome"], x["tipo"])
+        LOCAIS.append(x)
+
+def locais_por_cidade():
+    d = {}
+    for x in LOCAIS:
+        d.setdefault(x["cidade"], []).append(x)
+    for c in d:
+        d[c].sort(key=lambda v: (TIPO_ORDEM.index(v["tipo"]) if v["tipo"] in TIPO_ORDEM else 9, -(v.get("avaliacoes") or 0)))
+    return d
+
+MIN_CIDADE = 4
+BASE_EXPOR = "/onde-expor-arte-rj/"
+
+def local_ld(v):
+    tipo = {"Museu": "Museum", "Galeria de arte": "ArtGallery"}.get(v["tipo"], "Place")
+    d = {"@type": tipo, "name": v["nome"], "address": {"@type": "PostalAddress", "streetAddress": v["endereco"], "addressLocality": v["cidade"], "addressRegion": "RJ", "addressCountry": "BR"}}
+    if v.get("lat") is not None:
+        d["geo"] = {"@type": "GeoCoordinates", "latitude": v["lat"], "longitude": v["lng"]}
+    if v.get("telefone"):
+        d["telephone"] = v["telefone"]
+    if v.get("site"):
+        d["url"] = v["site"]
+    if v.get("maps_url"):
+        d["hasMap"] = v["maps_url"]
+    return d
+
+def ficha_local(v):
+    partes = [f'<h3>{e(v["nome"])}</h3>', f'<p class="cons">{e(v["tipo"])}{" · " + e(v["bairro"]) if v.get("bairro") else ""}</p>', f'<p>{e(v["endereco"])}</p>']
+    li = []
+    if v.get("telefone"):
+        li.append(f'Telefone: <a href="tel:{re.sub(r"[^0-9+]", "", v["telefone"])}">{e(v["telefone"])}</a>')
+    if v.get("site"):
+        rotulo = "Instagram" if "instagram.com" in v["site"] else "Facebook" if "facebook.com" in v["site"] else "Site"
+        li.append(f'{rotulo}: <a href="{e(v["site"])}" rel="nofollow noopener" target="_blank">{e(re.sub(r"^https?://(www[.])?", "", v["site"]).split("?")[0].rstrip("/")[:50])}</a>')
+    if v.get("maps_url"):
+        li.append(f'<a href="{e(v["maps_url"])}" rel="nofollow noopener" target="_blank">Ver no mapa</a>')
+    if li:
+        partes.append("<ul class=\"lista\">" + "".join(f"<li>{x}</li>" for x in li) + "</ul>")
+    return '<div class="ficha">' + "".join(partes) + "</div>"
+
+DICAS_EXPOR = """<h2>Como propor uma exposição a um museu, galeria ou centro cultural?</h2>
+<ol>
+<li><strong>Pesquise o espaço:</strong> veja as exposições anteriores e se o perfil combina com o seu trabalho.</li>
+<li><strong>Procure o canal certo:</strong> muitos espaços têm e-mail de curadoria, editais ou formulário de inscrição. Se não houver, ligue ou mande mensagem para perguntar.</li>
+<li><strong>Prepare o material:</strong> portfólio com fotos boas das obras, currículo, texto sobre sua pesquisa e, se possível, uma proposta de montagem.</li>
+<li><strong>Informe o essencial:</strong> título, técnica, medidas e quantidade de obras, além de necessidades de montagem e seguro.</li>
+<li><strong>Combine por escrito:</strong> datas, responsabilidades, transporte, divulgação e eventual venda das obras.</li>
+</ol>
+<p>Termos úteis: <a href="/glossario/o-que-e-curadoria/">curadoria</a>, <a href="/glossario/o-que-e-vernissage/">vernissage</a>, <a href="/glossario/o-que-e-galeria-de-arte/">galeria de arte</a> e <a href="/glossario/o-que-e-acervo/">acervo</a>.</p>"""
+
+def titulo_cidade(c):
+    t = f"Museus e galerias de arte em {c} (RJ): endereços e contatos"
+    return t if len(t) <= 66 else f"Museus e galerias em {c} (RJ): endereços"
+
+def pgs_locais():
+    if not LOCAIS:
+        return []
+    por = locais_por_cidade()
+    cidades = sorted(por, key=lambda c: (-len(por[c]), c))
+    grandes = [c for c in cidades if len(por[c]) >= MIN_CIDADE]
+    pequenas = [c for c in cidades if len(por[c]) < MIN_CIDADE]
+    ar = "Rio de Janeiro"
+    urls = [BASE_EXPOR]
+    total = len(LOCAIS)
+    # --- páginas por cidade
+    for c in grandes:
+        vs = por[c]
+        url = f"{BASE_EXPOR}{slug_de(c)}/"
+        urls.append(url)
+        nomes = [v["nome"] for v in vs[:3]]
+        resp = f"{c} tem {len(vs)} locais de exposição de arte listados aqui, entre museus, galerias e espaços culturais, como {', '.join(nomes[:-1])} e {nomes[-1]}." if len(nomes) > 1 else f"{c} tem {len(vs)} local de exposição de arte listado aqui: {nomes[0]}."
+        grupos = ""
+        for tp in TIPO_ORDEM:
+            g = [v for v in vs if v["tipo"] == tp]
+            if g:
+                plural = {"Museu": "Museus", "Galeria de arte": "Galerias de arte", "Centro de arte": "Centros de arte", "Centro cultural": "Centros culturais", "Espaço cultural": "Espaços culturais"}[tp]
+                grupos += f"<h2>{plural} em {e(c)}</h2>" + "".join(ficha_local(v) for v in g)
+        faq = [(f"Quais museus e galerias de arte existem em {c}?", f"Entre os locais listados nesta página estão {', '.join(v['nome'] for v in vs[:6])}. A lista traz endereço, telefone e site quando disponíveis."),
+               (f"Como expor minha arte em {c}?", "Pesquise o perfil do espaço, procure o canal de curadoria ou os editais, envie portfólio e currículo e combine tudo por escrito. Cada espaço tem suas regras."),
+               ("As informações desta página estão atualizadas?", "Os dados foram coletados em 7 de novembro de 2026. Horários, endereços e programação mudam, por isso confirme com o espaço antes de ir ou de enviar uma proposta.")]
+        outras = "".join(f'<li><a href="{BASE_EXPOR}{slug_de(x)}/">{e(x)}</a> ({len(por[x])})</li>' for x in grandes if x != c)
+        corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › <a href="{BASE_EXPOR}">Onde expor arte no RJ</a> › {e(c)}</p><article class="art" style="max-width:860px"><h1>Museus, galerias e espaços culturais em {e(c)} (RJ)</h1>
+<p class="cons">Atualizado em {meses(HOJE)} · <a href="/sobre/">Wil Catarina Artes</a></p>
+<div class="resp"><strong>Resposta rápida:</strong> {e(resp)}</div>
+{grupos}{DICAS_EXPOR}<h2>Perguntas frequentes</h2>{faq_html(faq)}
+<h2>Outras cidades do estado do Rio</h2><ul class="lista">{outras}</ul>
+<p>Veja também a <a href="{BASE_EXPOR}">lista de todas as cidades</a> e conheça as <a href="/obras/">obras de Wil Catarina</a>.</p>
+<p class="cons">Dados coletados do Google Maps em {meses(HOJE)}. Confirme horários e programação diretamente com cada espaço.</p></article></div>"""
+        ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
+              {"@type": "CollectionPage", "name": f"Museus e galerias de arte em {c} (RJ)", "url": DOM + url, "inLanguage": "pt-BR", "dateModified": HOJE, "isPartOf": {"@id": SITE_ID}, "publisher": {"@id": PESSOA_ID},
+               "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".resp", "h1"]},
+               "mainEntity": {"@type": "ItemList", "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": local_ld(v)} for i, v in enumerate(vs)]}},
+              faq_ld(faq), crumb_ld([("Início", "/"), ("Onde expor arte no RJ", BASE_EXPOR), (c, url)])]
+        gravar(url, pagina(url, titulo_cidade(c), meta_desc(f"{resp} Endereços, telefones e sites para visitar ou propor uma exposição."), corpo, ld, ativo=BASE_EXPOR))
+    # --- página-mãe
+    lista_cid = "".join(f'<li><a href="{BASE_EXPOR}{slug_de(c)}/"><strong>{e(c)}</strong></a>: {len(por[c])} locais ({e(", ".join(v["nome"] for v in por[c][:3]))}…)</li>' for c in grandes)
+    outras_html = ""
+    if pequenas:
+        outras_html = "<h2>Outras cidades com locais de arte</h2>" + "".join(
+            f'<h3>{e(c)}</h3><ul class="lista">' + "".join(f'<li><strong>{e(v["nome"])}</strong> ({e(v["tipo"].lower())}) — {e(v["endereco"])}' + (f' · <a href="{e(v["site"])}" rel="nofollow noopener" target="_blank">site</a>' if v.get("site") else "") + "</li>" for v in por[c]) + "</ul>"
+            for c in pequenas)
+    faq = [("Onde expor arte no estado do Rio de Janeiro?", f"Esta página reúne {total} museus, galerias e espaços culturais em {len(por)} cidades do estado do Rio, com endereço e contato. As maiores concentrações estão em " + ", ".join(grandes[:3]) + "."),
+           ("Como propor uma exposição?", "Pesquise o espaço, procure o canal de curadoria ou o edital, envie portfólio, currículo e texto sobre sua pesquisa e combine datas, montagem e divulgação por escrito."),
+           ("Preciso pagar para expor?", "Depende do espaço. Alguns são públicos e selecionam por edital ou curadoria, outros são galerias que cobram taxa ou comissão sobre vendas. Pergunte e combine por escrito antes de aceitar."),
+           ("As informações estão atualizadas?", "Os dados foram coletados em 7 de novembro de 2026. Confirme horários, endereços e programação com cada espaço antes de ir.")]
+    corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › Onde expor arte no RJ</p><article class="art" style="max-width:860px"><h1>Onde expor arte no Rio de Janeiro: museus, galerias e espaços culturais</h1>
+<p class="cons">Atualizado em {meses(HOJE)} · <a href="/sobre/">Wil Catarina Artes</a></p>
+<div class="resp"><strong>Resposta rápida:</strong> reunimos {total} museus, galerias de arte, centros culturais e espaços de exposição em {len(por)} cidades do estado do Rio de Janeiro, com endereço, telefone e site. Escolha a cidade, veja os locais e entre em contato para propor sua exposição ou planejar uma visita.</div>
+<h2>Locais de exposição por cidade</h2><ul class="lista">{lista_cid}</ul>
+{outras_html}{DICAS_EXPOR}<h2>Perguntas frequentes</h2>{faq_html(faq)}
+<p>Wil Catarina é artista visual e curadora de Niterói e já expôs em museus, galerias e espaços culturais do Rio. <a href="/sobre/">Conheça a trajetória</a> e veja as <a href="/obras/">obras</a>.</p>
+<p class="cons">Dados coletados do Google Maps em {meses(HOJE)}. Confirme horários e programação diretamente com cada espaço.</p></article></div>"""
+    ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
+          {"@type": "CollectionPage", "name": "Onde expor arte no Rio de Janeiro", "url": DOM + BASE_EXPOR, "inLanguage": "pt-BR", "dateModified": HOJE, "isPartOf": {"@id": SITE_ID}, "publisher": {"@id": PESSOA_ID},
+           "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".resp", "h1"]},
+           "mainEntity": {"@type": "ItemList", "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": f"Museus e galerias de arte em {c}", "url": f"{DOM}{BASE_EXPOR}{slug_de(c)}/"} for i, c in enumerate(grandes)]}},
+          faq_ld(faq), crumb_ld([("Início", "/"), ("Onde expor arte no RJ", BASE_EXPOR)])]
+    gravar(BASE_EXPOR, pagina(BASE_EXPOR, "Onde expor arte no Rio de Janeiro: museus, galerias e espaços", f"{total} museus, galerias e centros culturais do estado do Rio de Janeiro, por cidade, com endereço, telefone e site. Veja como propor uma exposição.", corpo, ld, ativo=BASE_EXPOR))
+    return urls
+
 def main():
     if SAIDA.exists():
         shutil.rmtree(SAIDA)
@@ -314,10 +595,12 @@ def main():
         webp(p["imagem"] + ".png", p["imagem"], tam)
     webp("wil.jpg", "wil", (480, 712))
     og()
-    modelos(); painel(); pg_home(); pg_obras(); pg_sobre(); pg_blog(); pg_contato(); pg_404()
+    carregar_termos()
+    carregar_locais()
+    modelos(); painel(); pg_home(); pg_obras(); pg_sobre(); pg_blog(); pg_contato(); pg_404(); pg_glossario(); pgs_legais(); feed(); llms_full(); urls_locais = pgs_locais()
     for o in S["obras"]:
         pg_obra(o)
-    urls = ["/", "/obras/", "/sobre/", "/blog/", "/contato/"] + [f"/blog/{p['slug']}/" for p in BLOG]
+    urls = ["/", "/obras/", "/sobre/", "/glossario/", "/blog/", "/contato/", "/politica-de-privacidade/", "/termos-de-uso/", "/acessibilidade/"] + [t["url"] for t in TERMOS] + [f"/blog/{p['slug']}/" for p in BLOG] + urls_locais
     tecnicos(urls)
     print(("PRODUÇÃO" if PROD else "TESTE (noindex)"), "-", len(urls), "páginas")
 

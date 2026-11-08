@@ -35,3 +35,8 @@ footer{border-top:1px solid var(--ln);margin-top:60px;padding:32px 0 90px;color:
 .fcols{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .flut{position:fixed;right:14px;bottom:14px;z-index:6;box-shadow:var(--sh)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto}}
+:focus-visible{outline:3px solid var(--ac2);outline-offset:2px;border-radius:4px}
+.ficha{border:1px solid var(--ln);border-radius:12px;padding:6px 18px 10px;margin:14px 0;background:var(--card)}
+.ficha h3{margin:10px 0 0}.ficha p{margin:4px 0}.ficha .lista{margin:4px 0 6px}
+article.art ol{padding-left:22px}article.art ol li{margin:6px 0}
+article.art table{border-collapse:collapse;width:100%;margin:14px 0;font-size:.95rem}article.art th,article.art td{border:1px solid var(--ln);padding:8px 10px;text-align:left}
