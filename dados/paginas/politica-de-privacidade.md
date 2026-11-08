@@ -2,7 +2,7 @@
 titulo: Política de Privacidade
 titulo_seo: Política de Privacidade | Wil Catarina Artes
 resumo: Como o site Wil Catarina Artes trata dados pessoais de quem visita ou entra em contato, de acordo com a Lei Geral de Proteção de Dados (LGPD).
-atualizado: 2026-11-07
+atualizado: 2026-11-08
 ---
 Esta Política de Privacidade explica como o site **Wil Catarina Artes** (wilcatarinaartes.com.br) trata dados pessoais, de acordo com a **Lei Geral de Proteção de Dados Pessoais (LGPD, Lei nº 13.709/2018)**.
 
@@ -43,11 +43,18 @@ Só compartilhamos dados quando necessário para o serviço ou exigido por lei, 
 - **Cloudflare:** hospedagem, segurança e estatísticas de acesso.
 - **WhatsApp, Instagram, Facebook e e-mail:** ao clicar nesses links, você passa a usar serviços de terceiros, regidos pelas políticas de privacidade deles.
 
-O site usa as fontes do próprio sistema do seu aparelho e **não carrega fontes, anúncios ou rastreadores de outras empresas**.
+As fontes do site ficam hospedadas no próprio site. Ele **não carrega fontes, anúncios ou rastreadores de outras empresas**.
 
-## 6. Cookies
+## 6. Cookies e preferências
 
-O site público não usa cookies de publicidade nem de rastreamento. O único cookie é o de sessão do painel da artista, necessário para o login. Você pode bloquear ou apagar cookies nas configurações do navegador.
+O site público **não usa cookies de publicidade nem de rastreamento.** Usamos somente o que é essencial para o site funcionar:
+
+| O quê | Para que serve | Duração |
+|---|---|---|
+| Preferência de cookies (armazenamento local do navegador) | Lembrar se você aceitou ou recusou o aviso de cookies, para não mostrar o aviso de novo | Até você apagar os dados do navegador |
+| Cookie de sessão do painel (`sid`) | Manter a artista conectada na área restrita. Visitantes não recebem este cookie | 30 dias |
+
+Na primeira visita, um aviso pergunta a sua preferência. Se no futuro o site passar a usar cookies opcionais, como os de estatística, eles **só serão ativados se você aceitar**. Você pode mudar sua escolha a qualquer momento no link **"Preferências de cookies"**, no rodapé de todas as páginas, ou apagar os cookies nas configurações do navegador.
 
 ## 7. Por quanto tempo guardamos os dados
 
