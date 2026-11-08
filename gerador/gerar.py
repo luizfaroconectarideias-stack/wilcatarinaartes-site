@@ -337,7 +337,7 @@ def ler_md(arq):
     return meta, corpo.strip()
 
 def md(t):
-    return markdown.markdown(t, extensions=["tables", "sane_lists"])
+    return markdown.markdown(t, extensions=["tables", "sane_lists", "toc"])
 
 def fontes_lista(txt):
     out = []
@@ -371,47 +371,85 @@ def termos_do_post(slug):
         return ""
     return '<h2>Termos de arte neste texto</h2><ul class="lista">' + "".join(f'<li><a href="{t["url"]}">{e(t["termo"].capitalize())}</a>: {e(t["resumo"].split(". ")[0].rstrip("."))}.</li>' for t in ts) + "</ul>"
 
+def nome_termo(t):
+    return t["termo"].split(" (")[0]
+
+def inicial(t):
+    return slug_de(nome_termo(t))[0].upper()
+
+def cartao_termo(t):
+    return f'<a class="tcard" href="{t["url"]}" data-n="{e(slug_de(nome_termo(t)).replace("-", " "))}"><strong>{e(nome_termo(t).capitalize())}</strong><span>{e(t["resumo"])}</span></a>'
+
+def barra_az(ativa=None):
+    letras = {inicial(t) for t in TERMOS}
+    itens = ""
+    for L in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+        if L in letras:
+            itens += f'<a href="/glossario/letra-{L.lower()}/"{" aria-current=page" if L == ativa else ""}>{L}</a>'
+        else:
+            itens += f'<span aria-hidden="true">{L}</span>'
+    return f'<nav class="az" aria-label="Filtrar por letra">{itens}</nav>'
+
+SCRIPT_BUSCA = """<script>(function(){var f=document.getElementById('bf'),q=document.getElementById('bq');if(!f)return;function ap(){var v=q.value.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').trim(),n=0;document.querySelectorAll('.tcard').forEach(function(c){var ok=!v||c.getAttribute('data-n').indexOf(v)>-1||c.textContent.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').indexOf(v)>-1;c.style.display=ok?'':'none';if(ok)n++});document.getElementById('bn').textContent=n?'':'Nenhum termo encontrado.'}q.addEventListener('input',ap);f.addEventListener('submit',function(ev){ev.preventDefault();ap()})})();</script>"""
+
 def pg_glossario():
-    def nome(t):
-        return t["termo"].split(" (")[0]
-    itens = "".join(f'<li><a href="{t["url"]}"><strong>{e(nome(t).capitalize())}</strong></a>: {e(t["resumo"])}</li>' for t in TERMOS)
+    cards = "".join(cartao_termo(t) for t in TERMOS)
     corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › Glossário</p><div class="art" style="max-width:860px"><h1>Glossário de arte: {len(TERMOS)} termos explicados</h1>
-<div class="resp"><strong>Resposta rápida:</strong> este glossário explica, em linguagem simples, termos de arte que aparecem em exposições, galerias e na compra de obras, como curadoria, vernissage, proveniência, técnica mista e moldura de conservação.</div>
-<ul class="lista">{itens}</ul>
-<p>Quer ver arte de perto? Conheça as <a href="/obras/">obras de Wil Catarina</a> ou descubra <a href="/onde-expor-arte-rj/">onde ver e expor arte no Rio de Janeiro</a>.</p></div></div>"""
+<p class="lead">Significado de termos de arte explicados de forma direta, com perguntas frequentes.</p>
+<form id="bf" class="busca" role="search"><label for="bq">Buscar um termo</label><div><input id="bq" type="search" placeholder="Ex.: vernissage, curadoria, passe-partout" autocomplete="off"><button class="btn" type="submit">Buscar</button></div></form>
+{barra_az()}<p id="bn" role="status" class="cons"></p>
+<div class="tlista">{cards}</div>
+<p>Quer ver arte de perto? Conheça as <a href="/obras/">obras de Wil Catarina</a> ou descubra <a href="/onde-expor-arte-rj/">onde ver e expor arte no Rio de Janeiro</a>.</p></div></div>{SCRIPT_BUSCA}"""
     ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
           {"@type": "DefinedTermSet", "@id": DOM + "/glossario/#set", "name": "Glossário de arte", "url": DOM + "/glossario/", "inLanguage": "pt-BR",
-           "hasDefinedTerm": [{"@type": "DefinedTerm", "name": nome(t), "description": t["resumo"], "url": DOM + t["url"]} for t in TERMOS]},
+           "hasDefinedTerm": [{"@type": "DefinedTerm", "name": nome_termo(t), "description": t["resumo"], "url": DOM + t["url"]} for t in TERMOS]},
           {"@type": "CollectionPage", "name": "Glossário de arte", "url": DOM + "/glossario/", "about": {"@id": DOM + "/glossario/#set"}, "publisher": {"@id": PESSOA_ID},
-           "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".resp", "h1"]}}, crumb_ld([("Início", "/"), ("Glossário", "/glossario/")])]
+           "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".lead", "h1"]}}, crumb_ld([("Início", "/"), ("Glossário", "/glossario/")])]
     gravar("/glossario/", pagina("/glossario/", "Glossário de arte: 20 termos explicados de forma simples", f"{len(TERMOS)} termos de arte explicados em linguagem simples: curadoria, vernissage, proveniência, fine art, técnica mista, moldura de conservação e mais.", corpo, ld, ativo="/glossario/"))
+    # páginas por letra
+    for L in sorted({inicial(t) for t in TERMOS}):
+        ts = [t for t in TERMOS if inicial(t) == L]
+        url = f"/glossario/letra-{L.lower()}/"
+        nomes = ", ".join(nome_termo(t) for t in ts)
+        corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › <a href="/glossario/">Glossário</a> › Letra {L}</p><div class="art" style="max-width:860px"><h1>Glossário de arte: termos com a letra {L}</h1>
+<p class="lead">Termos de arte que começam com {L}: {e(nomes)}.</p>{barra_az(L)}<div class="tlista">{"".join(cartao_termo(t) for t in ts)}</div>
+<p><a href="/glossario/">Ver todos os termos</a></p></div></div>"""
+        ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
+              {"@type": "CollectionPage", "name": f"Glossário de arte: letra {L}", "url": DOM + url, "isPartOf": {"@id": DOM + "/glossario/#set"}, "publisher": {"@id": PESSOA_ID}},
+              crumb_ld([("Início", "/"), ("Glossário", "/glossario/"), (f"Letra {L}", url)])]
+        gravar(url, pagina(url, f"Glossário de arte: termos com a letra {L}", meta_desc(f"Termos de arte que começam com {L}: {nomes}. Veja o significado de cada um."), corpo, ld, ativo="/glossario/").replace("index,follow,max-image-preview:large", "noindex,follow"))
     for t in TERMOS:
+        L = inicial(t)
         rel = [termo_por_arq(a) for a in t["rel"]]
         rel = [r for r in rel if r]
         faq = faq_html(t["faq"])
         fontes = ""
         if t["fontes"]:
-            fontes = '<h2>Fontes</h2><ul class="lista">' + "".join(f'<li><a href="{u}" rel="noopener">{e(n)}</a></li>' for n, u in t["fontes"]) + "</ul>"
-        veja = '<h2>Veja também</h2><ul class="lista">' + "".join(f'<li><a href="{r["url"]}">{e(r["termo"].split(" (")[0].capitalize())}</a>: {e(r["resumo"].split(". ")[0].rstrip("."))}.</li>' for r in rel) + "</ul>" if rel else ""
+            fontes = '<h2 id="fontes">Fontes</h2><ul class="lista">' + "".join(f'<li><a href="{u}" rel="noopener">{e(n)}</a></li>' for n, u in t["fontes"]) + "</ul>"
+        veja = '<h2 id="veja-tambem">Veja também</h2><ul class="lista">' + "".join(f'<li><a href="{r["url"]}">{e(nome_termo(r).capitalize())}</a>: {e(r["resumo"].split(". ")[0].rstrip("."))}.</li>' for r in rel) + "</ul>" if rel else ""
         blogl = ""
         if t["blog"]:
             bp = next((p for p in BLOG if p["slug"] == t["blog"]), None)
             if bp:
                 blogl = f'<p>Leia também no blog: <a href="/blog/{bp["slug"]}/">{e(bp["titulo"])}</a>.</p>'
-        h1 = "O que é " + t["termo"].split(" (")[0] + "?"
-        corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › <a href="/glossario/">Glossário</a> › {e(t['termo'].split(' (')[0].capitalize())}</p><article class="art"><h1>{e(h1)}</h1>
-<p class="cons">Glossário de arte · <a href="/sobre/">Wil Catarina Artes</a> · Atualizado em {meses(t['atualizado'])}</p>
-<div class="resp"><strong>Resposta rápida:</strong> {e(t['resumo'])}</div>
-{t['html']}{blogl}<h2>Perguntas frequentes</h2>{faq}{veja}{fontes}
+        h1 = "O que é " + nome_termo(t) + "?"
+        h2s = re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', t["html"])
+        toc_itens = [(i, x) for i, x in h2s] + [("faq", "Perguntas frequentes")] + ([("veja-tambem", "Veja também")] if rel else []) + ([("fontes", "Fontes")] if t["fontes"] else [])
+        toc = '<nav class="toc" aria-label="Neste artigo"><strong>Neste artigo</strong><ol>' + "".join(f'<li><a href="#{i}">{x}</a></li>' for i, x in toc_itens) + "</ol></nav>"
+        tambem = f'<p class="cons"><strong>Também chamado de:</strong> {e(", ".join(t["sin"]))}</p>' if t["sin"] else ""
+        corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › <a href="/glossario/">Glossário</a> › <a href="/glossario/letra-{L.lower()}/">Letra {L}</a> › {e(nome_termo(t).capitalize())}</p><article class="art"><p class="kick">Glossário · Letra {L}</p><h1>{e(h1)}</h1>
+<div class="resumo"><span class="kick">Em resumo</span><p>{e(t['resumo'])}</p></div>{tambem}
+<p class="cons">Redação <a href="/sobre/">Wil Catarina Artes</a> · atualizado em {meses(t['atualizado'])}</p>{toc}
+{t['html']}{blogl}<h2 id="faq">Perguntas frequentes</h2>{faq}{veja}{fontes}
 <p><a class="btn o" href="/glossario/">Voltar ao glossário</a> <a class="btn" href="/obras/">Ver as obras</a></p></article></div>"""
         ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
-              {"@type": "DefinedTerm", "@id": DOM + t["url"] + "#termo", "name": t["termo"].split(" (")[0], "description": t["resumo"], "url": DOM + t["url"], "inDefinedTermSet": DOM + "/glossario/#set",
+              {"@type": "DefinedTerm", "@id": DOM + t["url"] + "#termo", "name": nome_termo(t), "description": t["resumo"], "url": DOM + t["url"], "inDefinedTermSet": DOM + "/glossario/#set",
                **({"alternateName": t["sin"]} if t["sin"] else {})},
               {"@type": "WebPage", "@id": DOM + t["url"], "name": h1, "url": DOM + t["url"], "inLanguage": "pt-BR", "datePublished": t["atualizado"], "dateModified": t["atualizado"],
                "isPartOf": {"@id": SITE_ID}, "publisher": {"@id": PESSOA_ID}, "mainEntity": {"@id": DOM + t["url"] + "#termo"},
-               "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".resp", "h1"]},
+               "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".resumo", "h1"]},
                **({"citation": [{"@type": "CreativeWork", "name": n, "url": u} for n, u in t["fontes"]]} if t["fontes"] else {})},
-              faq_ld(t["faq"]), crumb_ld([("Início", "/"), ("Glossário", "/glossario/"), (t["termo"].split(" (")[0].capitalize(), t["url"])])]
+              faq_ld(t["faq"]), crumb_ld([("Início", "/"), ("Glossário", "/glossario/"), (f"Letra {L}", f"/glossario/letra-{L.lower()}/"), (nome_termo(t).capitalize(), t["url"])])]
         gravar(t["url"], pagina(t["url"], t["titulo_seo"], meta_desc(t["resumo"]), corpo, ld, ativo="/glossario/", tipo="article"))
 
 PAGINAS_LEGAIS = [("politica-de-privacidade", "Política de Privacidade"), ("termos-de-uso", "Termos de Uso"), ("acessibilidade", "Acessibilidade")]
@@ -600,7 +638,7 @@ def main():
     modelos(); painel(); pg_home(); pg_obras(); pg_sobre(); pg_blog(); pg_contato(); pg_404(); pg_glossario(); pgs_legais(); feed(); llms_full(); urls_locais = pgs_locais()
     for o in S["obras"]:
         pg_obra(o)
-    urls = ["/", "/obras/", "/sobre/", "/glossario/", "/blog/", "/contato/", "/politica-de-privacidade/", "/termos-de-uso/", "/acessibilidade/"] + [t["url"] for t in TERMOS] + [f"/blog/{p['slug']}/" for p in BLOG] + urls_locais
+    urls = ["/", "/obras/", "/sobre/", "/glossario/"] + ["/blog/", "/contato/", "/politica-de-privacidade/", "/termos-de-uso/", "/acessibilidade/"] + [t["url"] for t in TERMOS] + [f"/blog/{p['slug']}/" for p in BLOG] + urls_locais
     tecnicos(urls)
     print(("PRODUÇÃO" if PROD else "TESTE (noindex)"), "-", len(urls), "páginas")
 
