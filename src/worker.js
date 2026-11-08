@@ -172,7 +172,7 @@ async function sessaoValida(req, env) {
 const limpa = (v, n) => String(v ?? "").replace(/\s+$/g, "").slice(0, n);
 const ACENTOS = new RegExp("[" + String.fromCharCode(0x300) + "-" + String.fromCharCode(0x36f) + "]", "g");
 function slugDe(t) {
-  return String(t).normalize("NFD").replace(ACENTOS, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "obra";
+  return String(t).toLowerCase().replace(/[áàâãäéèêëíìîïóòôõöúùûüçñ]/g, (c) => "aaaaaeeeeiiiiooooouuuucn"["áàâãäéèêëíìîïóòôõöúùûüçñ".indexOf(c)]).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "obra";
 }
 async function slugUnico(env, titulo, ignorarId) {
   const base = slugDe(titulo);
