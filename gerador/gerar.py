@@ -527,9 +527,12 @@ def local_ld(v):
         d["telephone"] = v["telefone"]
     if v.get("site"):
         d["url"] = v["site"]
-    if v.get("maps_url"):
-        d["hasMap"] = v["maps_url"]
+    d["hasMap"] = mapa(v)
     return d
+
+def mapa(v):
+    from urllib.parse import quote
+    return "https://www.google.com/maps/search/?api=1&query=" + quote(f"{v['nome']}, {v['endereco']}")
 
 def ficha_local(v):
     partes = [f'<h3>{e(v["nome"])}</h3>', f'<p class="cons">{e(v["tipo"])}{" · " + e(v["bairro"]) if v.get("bairro") else ""}</p>', f'<p>{e(v["endereco"])}</p>']
@@ -539,8 +542,7 @@ def ficha_local(v):
     if v.get("site"):
         rotulo = "Instagram" if "instagram.com" in v["site"] else "Facebook" if "facebook.com" in v["site"] else "Site"
         li.append(f'{rotulo}: <a href="{e(v["site"])}" rel="nofollow noopener" target="_blank">{e(re.sub(r"^https?://(www[.])?", "", v["site"]).split("?")[0].rstrip("/")[:50])}</a>')
-    if v.get("maps_url"):
-        li.append(f'<a href="{e(v["maps_url"])}" rel="nofollow noopener" target="_blank">Ver no mapa</a>')
+    li.append(f'<a href="{e(mapa(v))}" rel="nofollow noopener" target="_blank">Ver no Google Maps</a>')
     if li:
         partes.append("<ul class=\"lista\">" + "".join(f"<li>{x}</li>" for x in li) + "</ul>")
     return '<div class="ficha">' + "".join(partes) + "</div>"
