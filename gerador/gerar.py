@@ -397,7 +397,7 @@ SCRIPT_BUSCA = """<script>(function(){var f=document.getElementById('bf'),q=docu
 
 def pg_glossario():
     cards = "".join(cartao_termo(t) for t in TERMOS)
-    corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › Glossário</p><div class="art" style="max-width:860px"><h1>Glossário de arte: {len(TERMOS)} termos explicados</h1>
+    corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › Glossário</p><div class="glos"><h1>Glossário de arte, curadoria e colecionismo</h1>
 <p class="lead">Significado de termos de arte explicados de forma direta, com perguntas frequentes.</p>
 <form id="bf" class="busca" role="search"><label for="bq">Buscar um termo</label><div><input id="bq" type="search" placeholder="Ex.: vernissage, curadoria, passe-partout" autocomplete="off"><button class="btn" type="submit">Buscar</button></div></form>
 {barra_az()}<p id="bn" role="status" class="cons"></p>
@@ -414,7 +414,7 @@ def pg_glossario():
         ts = [t for t in TERMOS if inicial(t) == L]
         url = f"/glossario/letra-{L.lower()}/"
         nomes = ", ".join(nome_termo(t) for t in ts)
-        corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › <a href="/glossario/">Glossário</a> › Letra {L}</p><div class="art" style="max-width:860px"><h1>Glossário de arte: termos com a letra {L}</h1>
+        corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › <a href="/glossario/">Glossário</a> › Letra {L}</p><div class="glos"><h1>Glossário de arte: letra {L}</h1>
 <p class="lead">Termos de arte que começam com {L}: {e(nomes)}.</p>{barra_az(L)}<div class="tlista">{"".join(cartao_termo(t) for t in ts)}</div>
 <p><a href="/glossario/">Ver todos os termos</a></p></div></div>"""
         ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),

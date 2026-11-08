@@ -57,3 +57,10 @@ article.art table{border-collapse:collapse;width:100%;margin:14px 0;font-size:.9
 .tlista{display:grid;gap:12px;margin:12px 0 24px}.tcard{display:block;text-decoration:none;color:var(--tx);background:var(--card);border:1px solid var(--ln);border-left:4px solid var(--ac2);padding:16px 18px}.tcard:hover{box-shadow:var(--sh)}.tcard strong{display:block;font:600 1.15rem "Josefin Sans",sans-serif;margin-bottom:4px}.tcard span{color:var(--mu);font-size:.97rem}
 .resumo{background:var(--ceu);border-left:4px solid var(--ac2);padding:16px 20px;margin:16px 0}.resumo .kick{font-size:.72rem}.resumo p{margin:6px 0 0;font-size:1.05rem}
 .toc{background:var(--areia);padding:16px 20px;margin:18px 0}.toc strong{font-size:.75rem;letter-spacing:.16em;text-transform:uppercase}.toc ol{margin:8px 0 0;padding-left:22px}.toc li{margin:3px 0}
+.glos{padding:8px 0 40px}.glos h1{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:clamp(1.9rem,4vw,2.8rem);letter-spacing:0;margin:.3em 0 .3em}
+body:has(.glos){background:var(--areia)}
+.glos .lead{margin:0 0 8px}
+.glos .busca input{border-radius:8px;padding:14px 16px}.glos .busca .btn{border-radius:8px;padding:14px 26px}
+.glos .az{gap:8px;margin:26px 0}.glos .az a,.glos .az span{width:40px;height:40px;border-radius:8px;font-family:Georgia,serif;font-size:1rem;font-weight:700;box-shadow:0 1px 2px rgba(18,60,70,.08)}.glos .az a{color:var(--tx)}.glos .az span{border:0;box-shadow:none;background:none;opacity:.35}
+.glos .tlista{gap:14px}.glos .tcard{border:1px solid var(--ln);border-left:1px solid var(--ln);border-radius:10px;padding:18px 22px;box-shadow:0 1px 3px rgba(18,60,70,.06)}.glos .tcard:hover{border-color:var(--ac2);box-shadow:var(--sh)}
+.glos .tcard strong{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:1.2rem}
