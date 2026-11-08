@@ -103,7 +103,7 @@ def pagina(url, titulo, desc, corpo, ld, og="/img/og.jpg", ativo=None, tipo="web
 <meta name="description" content="{e(desc)}">
 <meta name="robots" content="{robots}">
 <link rel="canonical" href="{canon}">
-<meta name="theme-color" content="#faf7f2">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta property="og:type" content="{tipo}"><meta property="og:locale" content="pt_BR"><meta property="og:site_name" content="{S['nome_site']}">
 <meta property="og:title" content="{e(t)}"><meta property="og:description" content="{e(desc)}"><meta property="og:url" content="{canon}">
@@ -111,6 +111,7 @@ def pagina(url, titulo, desc, corpo, ld, og="/img/og.jpg", ativo=None, tipo="web
 <meta name="author" content="Wil Catarina">
 <link rel="alternate" type="application/rss+xml" title="Blog de Wil Catarina" href="/feed.xml">
 <meta property="og:image:alt" content="{e(t)}">
+<link rel="preload" href="/img/j400.woff2" as="font" type="font/woff2" crossorigin>
 <style>{CSS}</style>
 {extra_head}{jl(ld)}
 </head><body>
@@ -184,14 +185,14 @@ def pg_home():
     gl_cards = "".join(f'<li><a href="{t["url"]}">{e(t["termo"].capitalize())}</a>: {e(t["resumo"].split(". ")[0].rstrip("."))}.</li>' for t in TERMOS[:6])
     cards = "".join(card(o) for o in S["obras"])
     posts = "".join(f'<li><a href="/blog/{p["slug"]}/">{e(p["titulo"])}</a></li>' for p in BLOG)
-    corpo = f"""<div class="w"><section class="hero"><div><p class="kick">Artista visual · Niterói, RJ</p><h1>Telas e esculturas de Wil Catarina</h1>
+    corpo = f"""<section class="banda"><div class="w hero"><div><p class="kick">Artista visual · Niterói, RJ</p><h1>Telas e esculturas de Wil Catarina</h1>
 <p class="lead">Arte inspirada na natureza, feita à mão em Niterói. Escolha uma obra e peça direto com a artista pelo WhatsApp.</p>
 <p><a class="btn" href="/obras/">Ver as obras</a> <a class="btn o" href="{wa('Olá, Wil! Vi seu site e gostaria de conversar sobre suas obras.')}" rel="noopener">Falar no WhatsApp</a></p></div>
-<div>{pic('tela-01', 'Tela 01, pintura abstrata amarela e laranja de Wil Catarina', 1400, 785, prio=True)}</div></section>
-<div class="resp"><strong>Wil Catarina</strong> é artista visual e curadora de Niterói (RJ). Cria pinturas, desenhos e esculturas que incorporam elementos da natureza e já expôs no Museu de Arte Contemporânea (MAC), em galerias e em espaços culturais do Rio de Janeiro.</div>
+<div>{pic('tela-01', 'Tela 01, pintura abstrata amarela e laranja de Wil Catarina', 1400, 785, prio=True)}</div></div></section>
+<div class="w"><div class="resp"><strong>Wil Catarina</strong> é artista visual e curadora de Niterói (RJ). Cria pinturas, desenhos e esculturas que incorporam elementos da natureza e já expôs no Museu de Arte Contemporânea (MAC), em galerias e em espaços culturais do Rio de Janeiro.</div>
 <h2>Obras disponíveis</h2><div class="grade"><!--OBRAS-->{cards}<!--/OBRAS--></div>
 <p><a href="/obras/">Ver todas as obras »</a></p></div>
-<section class="faixa"><div class="w"><div class="hero" style="padding:0"><div class="ph-wrap">{pic('wil', 'Wil Catarina, artista visual, segurando uma pequena escultura', 712, 827, (480, 712), '(min-width:800px) 480px, 100vw').replace('<img ','<img class="ph" style="max-width:420px;width:100%" ')}</div>
+<section class="faixa"><div class="w"><div class="hero" style="padding-block:0"><div class="ph-wrap">{pic('wil', 'Wil Catarina, artista visual, segurando uma pequena escultura', 712, 827, (480, 712), '(min-width:800px) 480px, 100vw').replace('<img ','<img class="ph" style="max-width:420px;width:100%" ')}</div>
 <div><h2 style="margin-top:0">Sobre a artista</h2><p>“{e(S['frase'])}” A obra de Wil nasce do diálogo entre razão e sensibilidade, com olhar atento ao corpo, ao tempo e à matéria. É graduada em Artes pela UFF e faz oficinas e workshops para compartilhar seu processo.</p><p><a href="/sobre/">Conheça a trajetória »</a></p></div></div></div></section>
 <div class="w"><h2>Glossário de arte</h2><ul class="lista">{gl_cards}</ul><p><a href="/glossario/">Ver os 20 termos do glossário »</a></p><h2>Onde expor arte no Rio de Janeiro</h2><p>Museus, galerias e centros culturais do estado, organizados por cidade. <a href="/onde-expor-arte-rj/">Ver locais de exposição »</a></p><h2>Do blog</h2><ul class="lista">{posts}</ul>
 <h2>Dúvidas frequentes</h2>{faq_html(S['faq'])}</div>"""
@@ -298,8 +299,10 @@ def tecnicos(urls):
     blog = "\n".join(f"- [{p['titulo']}]({DOM}/blog/{p['slug']}/)" for p in BLOG)
     gl = "\n".join(f"- [{t['termo']}]({DOM}{t['url']}): {t['resumo']}" for t in TERMOS)
     (SAIDA / "llms.txt").write_text(f"# Wil Catarina Artes\n\n> {S['descricao']}\n\nWil Catarina é artista visual e curadora de Niterói (RJ), graduada em Artes pela UFF. As obras são vendidas pelo WhatsApp {S['whatsapp_exibir']}.\n\n## Obras\n{obras}\n\n## Páginas\n- [Sobre a artista]({DOM}/sobre/)\n- [Contato]({DOM}/contato/)\n\n## Glossário de arte\n{gl}\n\n## Blog\n{blog}\n\nVersão completa em texto: {DOM}/llms-full.txt\n", encoding="utf8")
-    (SAIDA / "favicon.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#8a5a12"/><text x="32" y="43" font-family="Georgia,serif" font-size="30" font-weight="700" fill="#faf7f2" text-anchor="middle">WC</text></svg>', encoding="utf8")
+    (SAIDA / "favicon.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1d6b6b"/><text x="32" y="43" font-family="Georgia,serif" font-size="30" font-weight="700" fill="#ffffff" text-anchor="middle">WC</text></svg>', encoding="utf8")
     shutil.copy(RAIZ / "estilo/estilo.css", SAIDA / "estilo.css")
+    for f in (RAIZ / "estilo/fontes").glob("*.woff2"):
+        shutil.copy(f, SAIDA / "img" / f.name)
 
 def og():
     im = Image.open(RAIZ / "fotos/d64.jpg").convert("RGB")
