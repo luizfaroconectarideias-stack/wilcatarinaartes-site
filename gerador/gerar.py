@@ -186,7 +186,7 @@ def pg_obras():
 def termo_dia():
     t0 = TERMOS[0]
     letras = {inicial(t) for t in TERMOS}
-    az = "".join(f'<a href="/glossario/letra-{L.lower()}/">{L}</a>' if L in letras else f'<span aria-hidden="true">{L}</span>' for L in "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    az = "".join(f'<a href="/glossario/letra-{L.lower()}/">{L}</a>' if L in letras else f'<span aria-hidden="true" data-l="{L}"></span>' for L in "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
     dados = json.dumps([[nome_termo(t).capitalize(), t["resumo"], t["url"]] for t in TERMOS], ensure_ascii=False)
     return f"""<section class="tdia w" aria-labelledby="td-n"><div class="tdia-g">
 <div class="tdia-a"><p class="kick">Termo do dia · Glossário</p><h2 id="td-n">{e(nome_termo(t0).capitalize())}</h2><p id="td-r">{e(t0['resumo'])}</p><a class="sub" id="td-l" href="{t0['url']}">Ler a definição completa</a></div>
@@ -402,7 +402,7 @@ def barra_az(ativa=None):
         if L in letras:
             itens += f'<a href="/glossario/letra-{L.lower()}/"{" aria-current=page" if L == ativa else ""}>{L}</a>'
         else:
-            itens += f'<span aria-hidden="true">{L}</span>'
+            itens += f'<span aria-hidden="true" data-l="{L}"></span>'
     return f'<nav class="az" aria-label="Filtrar por letra">{itens}</nav>'
 
 SCRIPT_BUSCA = """<script>(function(){var f=document.getElementById('bf'),q=document.getElementById('bq');if(!f)return;function ap(){var v=q.value.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').trim(),n=0;document.querySelectorAll('.tcard').forEach(function(c){var ok=!v||c.getAttribute('data-n').indexOf(v)>-1||c.textContent.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').indexOf(v)>-1;c.style.display=ok?'':'none';if(ok)n++});document.getElementById('bn').textContent=n?'':'Nenhum termo encontrado.'}q.addEventListener('input',ap);f.addEventListener('submit',function(ev){ev.preventDefault();ap()})})();</script>"""

@@ -2,7 +2,7 @@
 @font-face{font-family:"Josefin Sans";font-weight:400;font-style:normal;font-display:swap;src:url(/img/j400.woff2) format("woff2")}
 @font-face{font-family:"Josefin Sans";font-weight:600;font-style:normal;font-display:swap;src:url(/img/j600.woff2) format("woff2")}
 :root{--bg:#fff;--tx:#23353a;--mu:#53676c;--ac:#1d6b6b;--ac2:#3fa79a;--azul:#2d6f91;--ln:#dde8e6;--card:#fff;--areia:#f4f0e8;--ceu:#e4f2f5;--mar:#d3ece6;--wa:#1d6b6b;--esc:#123c46;--sh:0 10px 30px rgba(18,60,70,.10)}
-@media(prefers-color-scheme:dark){:root{--bg:#0e1b20;--tx:#e8f1f0;--mu:#a9bfbd;--ac:#6fcdbf;--ac2:#3fa79a;--azul:#7db8d6;--ln:#24393d;--card:#152a30;--areia:#142429;--ceu:#12272d;--mar:#14302f;--wa:#2c8a80;--esc:#081217;--sh:0 10px 30px rgba(0,0,0,.4)}}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1b20;--tx:#e8f1f0;--mu:#a9bfbd;--ac:#6fcdbf;--ac2:#3fa79a;--azul:#7db8d6;--ln:#24393d;--card:#152a30;--areia:#142429;--ceu:#12272d;--mar:#14302f;--wa:#1f7a72;--esc:#081217;--sh:0 10px 30px rgba(0,0,0,.4)}}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--tx);font:400 18px/1.7 "Josefin Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 h1,h2,h3,.logo{font-family:"Josefin Sans",system-ui,sans-serif;font-weight:600;line-height:1.2;letter-spacing:.01em}
@@ -102,3 +102,4 @@ footer{padding:36px 0 90px}
 .ck-on .flut{display:none}
 .lk{background:none;border:0;padding:4px 0;color:#e8f4f2;text-decoration:underline;font:inherit;cursor:pointer}
 @media(max-width:799px){.ck{left:10px;right:10px;bottom:10px;padding:16px}.ck div{width:100%}.ck .btn{flex:1;text-align:center;letter-spacing:.06em;padding:12px 8px}}
+.az span::before,.az2 span::before{content:attr(data-l)}
