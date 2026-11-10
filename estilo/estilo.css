@@ -103,3 +103,4 @@ footer{padding:36px 0 90px}
 .lk{background:none;border:0;padding:4px 0;color:#e8f4f2;text-decoration:underline;font:inherit;cursor:pointer}
 @media(max-width:799px){.ck{left:10px;right:10px;bottom:10px;padding:16px}.ck div{width:100%}.ck .btn{flex:1;text-align:center;letter-spacing:.06em;padding:12px 8px}}
 .az span::before,.az2 span::before{content:attr(data-l)}
+.sub-h{font-size:1.3rem;font-weight:600;color:var(--ac);margin:-.2em 0 .6em;letter-spacing:.02em}

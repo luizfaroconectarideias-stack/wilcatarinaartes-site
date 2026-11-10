@@ -197,11 +197,12 @@ def pg_home():
     gl_cards = "".join(f'<li><a href="{t["url"]}">{e(t["termo"].capitalize())}</a>: {e(t["resumo"].split(". ")[0].rstrip("."))}.</li>' for t in TERMOS[:6])
     cards = "".join(card(o) for o in S["obras"])
     posts = "".join(f'<li><a href="/blog/{p["slug"]}/">{e(p["titulo"])}</a></li>' for p in BLOG)
-    corpo = f"""<section class="banda"><div class="w hero"><div><p class="kick">Artista visual · Niterói, RJ</p><h1>Telas e esculturas de Wil Catarina</h1>
-<p class="lead">Arte inspirada na natureza, feita à mão em Niterói. Escolha uma obra e peça direto com a artista pelo WhatsApp.</p>
+    corpo = f"""<section class="banda"><div class="w hero"><div><p class="kick">Artista visual · Niterói, RJ</p><h1>Wil Catarina</h1>
+<p class="sub-h">Arte contemporânea (pinturas e esculturas)</p>
+<p class="lead">Arte inspirada na natureza. Escolha sua obra, contato direto com a artista.</p>
 <p><a class="btn" href="/obras/">Ver as obras</a> <a class="btn o" href="{wa('Olá, Wil! Vi seu site e gostaria de conversar sobre suas obras.')}" rel="noopener">Falar no WhatsApp</a></p></div>
 <div>{pic('tela-01', 'Tela 01, pintura abstrata amarela e laranja de Wil Catarina', 1400, 785, prio=True)}</div></div></section>
-<div class="w"><div class="resp"><strong>Wil Catarina</strong> é artista visual e curadora de Niterói (RJ). Cria pinturas, desenhos e esculturas que incorporam elementos da natureza e já expôs no Museu de Arte Contemporânea (MAC), em galerias e em espaços culturais do Rio de Janeiro.</div>
+<div class="w"><div class="resp"><strong>Wil Catarina</strong> é artista visual e curadora de Niterói (RJ). Cria pinturas, desenhos e esculturas que incorporam elementos da natureza. Sua trajetória inclui exposições individuais e coletivas em diversos espaços culturais relevantes no Brasil e no exterior, em especial o Museu de Arte Contemporânea (MAC).</div>
 <h2>Obras disponíveis</h2><div class="grade"><!--OBRAS-->{cards}<!--/OBRAS--></div>
 <p><a href="/obras/">Ver todas as obras »</a></p></div>
 <section class="faixa"><div class="w"><div class="hero" style="padding-block:0"><div class="ph-wrap">{pic('wil', 'Wil Catarina, artista visual, segurando uma pequena escultura', 712, 827, (480, 712), '(min-width:800px) 480px, 100vw').replace('<img ','<img class="ph" style="max-width:420px;width:100%" ')}</div>
@@ -221,7 +222,7 @@ def pg_sobre():
 <div class="prod" style="grid-template-columns:1fr"><div style="display:grid;gap:28px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));align-items:start">
 <div>{pic('wil', 'Wil Catarina, artista visual e curadora', 712, 827, (480, 712), '(min-width:800px) 420px, 100vw', prio=True).replace('<img ', '<img class="ph" ')}</div>
 <div><p class="kick">Curadora e artista visual</p><h1>Wil Catarina</h1>
-<div class="resp"><strong>Resposta rápida:</strong> Wil Catarina é artista visual e curadora de Niterói (RJ), graduada em Artes pela UFF. Faz pinturas, desenhos e esculturas inspirados na natureza e expõe desde o Museu de Arte Contemporânea (MAC) até galerias do Rio de Janeiro.</div>
+<div class="resp"><strong>Resposta rápida:</strong> Wil Catarina é artista visual e curadora de Niterói (RJ), graduada em Artes pela UFF. Faz pinturas, desenhos e esculturas inspirados na natureza. Sua trajetória inclui exposições individuais e coletivas em diversos espaços culturais relevantes no Brasil e no exterior, em especial o Museu de Arte Contemporânea (MAC).</div>
 <p>Minha arte nasce do diálogo entre razão e sensibilidade. Meu processo criativo é guiado pela observação atenta do corpo, do tempo e da matéria como expressões do existir. Em minhas obras, o olhar técnico se funde ao intuitivo, resultando em composições que atravessam o visível para revelar camadas sutis da experiência humana.</p>
 <p>Entendo a criação como um ato de consciência e escuta, onde cada cor, traço ou textura traduz o que vibra entre o concreto e o simbólico. Minha pesquisa se move entre a ciência, a natureza e a espiritualidade, buscando compreender a arte como linguagem de conexão entre pessoas, territórios e percepções.</p>
 <p><em>“{e(S['frase'])}”</em></p></div></div></div>
@@ -629,7 +630,7 @@ def pgs_locais():
 <div class="resp"><strong>Resposta rápida:</strong> reunimos {total} museus, galerias de arte, centros culturais e espaços de exposição em {len(por)} cidades do estado do Rio de Janeiro, com endereço, telefone e site. Escolha a cidade, veja os locais e entre em contato para propor sua exposição ou planejar uma visita.</div>
 <h2>Locais de exposição por cidade</h2><ul class="lista">{lista_cid}</ul>
 {outras_html}{DICAS_EXPOR}<h2>Perguntas frequentes</h2>{faq_html(faq)}
-<p>Wil Catarina é artista visual e curadora de Niterói e já expôs em museus, galerias e espaços culturais do Rio. <a href="/sobre/">Conheça a trajetória</a> e veja as <a href="/obras/">obras</a>.</p>
+<p>Wil Catarina é artista visual e curadora de Niterói, com exposições individuais e coletivas no Brasil e no exterior, em especial no Museu de Arte Contemporânea (MAC). <a href="/sobre/">Conheça a trajetória</a> e veja as <a href="/obras/">obras</a>.</p>
 <p class="cons">Dados coletados do Google Maps em {meses(HOJE)}. Confirme horários e programação diretamente com cada espaço.</p></article></div>"""
     ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
           {"@type": "CollectionPage", "name": "Onde expor arte no Rio de Janeiro", "url": DOM + BASE_EXPOR, "inLanguage": "pt-BR", "dateModified": HOJE, "isPartOf": {"@id": SITE_ID}, "publisher": {"@id": PESSOA_ID},
