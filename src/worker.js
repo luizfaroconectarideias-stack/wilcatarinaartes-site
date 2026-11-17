@@ -73,7 +73,7 @@ function card(cfg, o) {
   const btn = o.status === "vendida"
     ? `<a class="btn o" href="/obras/${o.slug}/">Ver detalhes</a>`
     : `<a class="btn" href="${wa(cfg, "Olá, Wil! Tenho interesse na obra " + o.titulo + ".")}" rel="noopener">Pedir pelo WhatsApp</a>`;
-  return `<article class="card"><a class="l" href="/obras/${o.slug}/"><div class="im">${img}</div><div class="cb"><h3>${esc(o.titulo)}</h3><p>${esc(o.tipo)} · Wil Catarina</p>${precoHtml(o)}</div></a><div class="cb" style="padding-top:0">${btn}</div></article>`;
+  return `<article class="card" data-tipo="${esc(o.tipo)}"><a class="l" href="/obras/${o.slug}/"><div class="im">${img}</div><div class="cb"><h3>${esc(o.titulo)}</h3><p>${esc(o.tipo)} · Wil Catarina</p>${precoHtml(o)}</div></a><div class="cb" style="padding-top:0">${btn}</div></article>`;
 }
 
 async function paginaMarcada(env, url, home) {

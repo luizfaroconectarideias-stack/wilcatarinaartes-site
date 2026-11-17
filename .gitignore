@@ -10,3 +10,5 @@ _src/
 !.dev.vars.example
 !.env.example
 painel_senha.txt
+_drive/
+.cache_img/

@@ -28,6 +28,23 @@ def webp(origem, nome, larguras, qualidade=80):
         c.save(SAIDA / "img" / f"{nome}-{w}.webp", "WEBP", quality=qualidade, method=6)
     return im.size
 
+CACHE = RAIZ / ".cache_img"
+
+def webp_cache(origem, nome, larguras=(480, 900, 1400), qualidade=80):
+    """Gera os WebP uma vez (pasta .cache_img) e só copia nas próximas gerações."""
+    CACHE.mkdir(exist_ok=True)
+    (SAIDA / "img").mkdir(parents=True, exist_ok=True)
+    marca = CACHE / f"{nome}.tam"
+    if not marca.exists() or marca.stat().st_mtime < origem.stat().st_mtime:
+        im = Image.open(origem).convert("RGB")
+        for w in larguras:
+            c = im.copy(); c.thumbnail((w, 99999))
+            c.save(CACHE / f"{nome}-{w}.webp", "WEBP", quality=qualidade, method=6)
+        marca.write_text(f"{im.width}x{im.height}", encoding="utf8")
+    for w in larguras:
+        shutil.copy(CACHE / f"{nome}-{w}.webp", SAIDA / "img" / f"{nome}-{w}.webp")
+    return tuple(int(x) for x in marca.read_text(encoding="utf8").split("x"))
+
 def pic(nome, alt, w, h, tam=(480, 900, 1400), sizes="(min-width:800px) 560px, 100vw", prio=False, larg_max=None):
     ls = [t for t in tam if (SAIDA / "img" / f"{nome}-{t}.webp").exists()]
     ss = ", ".join(f"/img/{nome}-{t}.webp {t}w" for t in ls)
@@ -45,6 +62,13 @@ def meses(d):
     a, m, dia = d.split("-")
     n = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"]
     return f"{int(dia)} de {n[int(m)-1]} de {a}"
+
+_LG = (RAIZ / "estilo/logo.svg").read_text(encoding="utf8")
+LOGO_VB = re.search(r'viewBox="([^"]+)"', _LG).group(1)
+LOGO_D = re.search(r' d="([^"]+)"', _LG).group(1)
+
+def marca(classe="marca"):
+    return f'<svg class="{classe}" viewBox="{LOGO_VB}" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="{LOGO_D}"/></svg>'
 
 PESSOA_ID = DOM + "/#wil"
 SITE_ID = DOM + "/#site"
@@ -77,7 +101,7 @@ def faq_html(lista):
     return "".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in lista)
 
 # ---------- layout ----------
-NAV = [("Obras", "/obras/"), ("Sobre a artista", "/sobre/"), ("Glossário", "/glossario/"), ("Onde expor", "/onde-expor-arte-rj/"), ("Blog", "/blog/"), ("Contato", "/contato/")]
+NAV = [("Obras", "/obras/"), ("Sobre a artista", "/sobre/"), ("Exposições", "/projetos-e-exposicoes/"), ("Glossário", "/glossario/"), ("Onde expor", "/onde-expor-arte-rj/"), ("Blog", "/blog/"), ("Contato", "/contato/")]
 CSS = re.sub(r"\s+", " ", re.sub(r"/\*.*?\*/", "", (RAIZ / "estilo/estilo.css").read_text(encoding="utf8"), flags=re.S)).replace(" {", "{").replace("{ ", "{").replace("; ", ";").replace(": ", ":")
 
 def meta_desc(t, n=158):
@@ -117,13 +141,13 @@ def pagina(url, titulo, desc, corpo, ld, og="/img/og.jpg", ativo=None, tipo="web
 </head><body>
 <a class="skip" href="#c">Ir para o conteúdo</a>
 <header class="top"><div class="w bar">
-<a class="logo" href="/">Wil Catarina<small>Artista visual · Niterói</small></a>
+<a class="logo" href="/" aria-label="Wil Catarina Artes, página inicial">{marca()}<span>Wil Catarina<small>Artista visual · Niterói</small></span></a>
 <nav aria-label="Principal"><ul>{nav}</ul></nav>
 <a class="btn" href="{wa('Olá, Wil! Vi seu site e gostaria de conversar sobre suas obras.')}" rel="noopener">WhatsApp</a>
 </div></header>
 <main id="c">{corpo}</main>
 <footer><div class="w fcols">
-<div><strong>Wil Catarina</strong><br>Artista visual e curadora<br>{S['cidade']} · {S['uf']}</div>
+<div>{marca('marca-rod')}<strong>Wil Catarina</strong><br>Artista visual e curadora<br>{S['cidade']} · {S['uf']}</div>
 <div><a href="{wa('Olá, Wil! Vi seu site.')}" rel="noopener">WhatsApp {S['whatsapp_exibir']}</a><br><a href="mailto:{S['email']}">{S['email']}</a><br><a href="{S['instagram']}" rel="me noopener">Instagram @wilcatarina</a> · <a href="{S['facebook']}" rel="me noopener">Facebook</a></div>
 <div><a href="/obras/">Obras</a> · <a href="/sobre/">Sobre</a> · <a href="/glossario/">Glossário</a> · <a href="/onde-expor-arte-rj/">Onde expor</a> · <a href="/blog/">Blog</a> · <a href="/contato/">Contato</a><br><a href="/politica-de-privacidade/">Privacidade</a> · <a href="/termos-de-uso/">Termos de uso</a> · <a href="/acessibilidade/">Acessibilidade</a> · <button type="button" class="lk" id="ck-abrir">Preferências de cookies</button><br>© {S['nome_site']}. Todas as obras são de autoria de Wil Catarina.</div>
 </div></footer>
@@ -150,7 +174,7 @@ def ld_obra(o):
 
 def card(o):
     preco = f'<span class="preco">{brl(o["preco"])}</span>' if o["preco"] else '<span class="cons">Valor sob consulta</span>'
-    return f"""<article class="card"><a class="l" href="/obras/{o['slug']}/"><div class="im">{pic(o['slug'], o['titulo'] + ' — ' + o['resumo'], 480, 360, (480, 900), '(min-width:800px) 340px, 100vw')}</div>
+    return f"""<article class="card" data-tipo="{e(o['tipo'])}"><a class="l" href="/obras/{o['slug']}/"><div class="im">{pic(o['slug'], o['titulo'] + ' — ' + o['resumo'], 480, 360, (480, 900), '(min-width:800px) 340px, 100vw')}</div>
 <div class="cb"><h3>{e(o['titulo'])}</h3><p>{e(o['tipo'])} · Wil Catarina</p>{preco}</div></a>
 <div class="cb" style="padding-top:0"><a class="btn" href="{wa('Olá, Wil! Tenho interesse na obra ' + o['titulo'] + '.')}" rel="noopener">Pedir pelo WhatsApp</a></div></article>"""
 
@@ -174,13 +198,56 @@ def pg_obras():
     cards = "".join(card(o) for o in S["obras"])
     corpo = f"""<div class="w"><p class="crumb"><a href="/">Início</a> › Obras</p><h1>Obras de Wil Catarina</h1>
 <div class="resp"><strong>Resposta rápida:</strong> aqui você vê telas e esculturas da artista visual Wil Catarina (Niterói, RJ). Clique na obra para ver os detalhes e peça pelo WhatsApp: a conversa vai direto para a artista.</div>
+<div class="filtros" role="group" aria-label="Filtrar obras por tipo"><button type="button" aria-pressed="true" data-f="">Todas</button><button type="button" aria-pressed="false" data-f="Tela">Pinturas</button><button type="button" aria-pressed="false" data-f="Escultura">Esculturas</button><button type="button" aria-pressed="false" data-f="Desenho">Desenhos</button><button type="button" aria-pressed="false" data-f="Gravura">Gravuras</button><button type="button" aria-pressed="false" data-f="Outro">Colagens</button></div>
 <div class="grade"><!--OBRAS-->{cards}<!--/OBRAS--></div>
+<script>(function(){{var b=document.querySelectorAll('.filtros button');b.forEach(function(x){{x.addEventListener('click',function(){{var f=x.getAttribute('data-f');b.forEach(function(y){{y.setAttribute('aria-pressed',y===x?'true':'false')}});document.querySelectorAll('.grade .card').forEach(function(c){{c.style.display=!f||c.getAttribute('data-tipo')===f?'':'none'}})}})}})}})();</script>
+<p>Veja também os <a href="/projetos-e-exposicoes/">projetos e exposições</a> da artista.</p>
 <h2>Dúvidas frequentes</h2>{faq_html(S['faq'][:4])}</div>"""
     ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
           {"@type": "CollectionPage", "name": "Obras de Wil Catarina", "url": DOM + "/obras/", "about": {"@id": PESSOA_ID},
            "mainEntity": {"@type": "ItemList", "itemListElement": "__ITEMS__"}},
           faq_ld(S["faq"][:4]), crumb_ld([("Início", "/"), ("Obras", "/obras/")])]
     gravar("/obras/", pagina("/obras/", "Obras de Wil Catarina — telas e esculturas", "Telas e esculturas da artista visual Wil Catarina, de Niterói (RJ). Veja as obras e peça pelo WhatsApp.", corpo, ld, ativo="/obras/"))
+
+# ---------- projetos e exposições ----------
+DRIVE = json.loads((RAIZ / "dados/obras_drive.json").read_text(encoding="utf8"))
+EXPO = DRIVE["exposicoes"]
+BASE_EXPO = "/projetos-e-exposicoes/"
+EXPO_TAM = {}
+
+def fotos_expo():
+    for x in EXPO:
+        for i, _ in enumerate(x["fotos"]):
+            n = f"x-{x['id']}-{i + 1}"
+            EXPO_TAM[n] = webp_cache(RAIZ / "fotos/expo" / f"{n}.jpg", n)
+
+def img_expo(n, alt, sizes="(min-width:800px) 360px, 100vw"):
+    w, h = EXPO_TAM[n]
+    return pic(n, alt, w, h, sizes=sizes)
+
+def secao_expo_home():
+    cards = "".join(f'''<article class="card"><a class="l" href="{BASE_EXPO}#{x['id']}"><div class="im">{img_expo(f"x-{x['id']}-1", x['titulo'] + ' — ' + x['tipo'].lower() + ' de Wil Catarina')}</div><div class="cb"><p class="kick" style="font-size:.7rem">{e(x['tipo'])}</p><h3>{e(x['titulo'])}</h3><p>{e(x['texto'])}</p></div></a></article>''' for x in EXPO[:3])
+    return f'''<section class="faixa expo-home" aria-labelledby="expo-h"><div class="w"><p class="kick">Trajetória</p><h2 id="expo-h" style="margin-top:.2em">Projetos e Exposições</h2>
+<p class="lead">Exposições individuais e coletivas em museus, galerias e espaços culturais, com destaque para o Museu de Arte Contemporânea (MAC) de Niterói.</p>
+<div class="grade">{cards}</div><p><a class="btn o" href="{BASE_EXPO}">Ver todos os projetos e exposições</a></p></div></section>'''
+
+def pg_expo():
+    li = lambda l: "".join(f"<li>{e(x)}</li>" for x in l)
+    blocos = ""
+    for x in EXPO:
+        fotos = "".join(f'<figure>{img_expo(f"x-{x['id']}-{i + 1}", x['titulo'] + ", foto " + str(i + 1))}</figure>' for i in range(len(x["fotos"])))
+        blocos += f'''<section class="expo" id="{x['id']}"><p class="kick">{e(x['tipo'])}</p><h2 style="margin-top:.2em">{e(x['titulo'])}</h2><p>{e(x['texto'])}</p><div class="galeria">{fotos}</div></section>'''
+    corpo = f'''<div class="w"><p class="crumb"><a href="/">Início</a> › Projetos e Exposições</p><h1>Projetos e Exposições</h1>
+<div class="resp"><strong>Resposta rápida:</strong> Wil Catarina tem exposições individuais e coletivas em museus, galerias e espaços culturais, em especial o Museu de Arte Contemporânea (MAC) de Niterói. Abaixo estão fotos de exposições e projetos e a lista completa de onde a artista já expôs.</div>
+{blocos}
+<section class="expo" id="lista"><h2>Exposições individuais</h2><ul class="lista">{li(S['exposicoes_individuais'])}</ul>
+<h2>Exposições coletivas</h2><ul class="lista">{li(S['exposicoes_coletivas'])}</ul></section>
+<p style="margin-top:28px"><a class="btn" href="/obras/">Ver as obras</a> <a class="btn o" href="{wa('Olá, Wil! Vi seus projetos e exposições no site e gostaria de conversar.')}" rel="noopener">Falar com a artista</a></p></div>'''
+    ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
+          {"@type": "CollectionPage", "name": "Projetos e Exposições de Wil Catarina", "url": DOM + BASE_EXPO, "about": {"@id": PESSOA_ID}, "isPartOf": {"@id": SITE_ID},
+           "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".resp", "h1"]}},
+          crumb_ld([("Início", "/"), ("Projetos e Exposições", BASE_EXPO)])]
+    gravar(BASE_EXPO, pagina(BASE_EXPO, "Projetos e Exposições de Wil Catarina", "Exposições e projetos da artista visual Wil Catarina: MAC de Niterói, Corredor das Artes, In Progress e mais, com fotos e a lista completa.", corpo, ld, og="/img/x-mac-1-1400.webp", ativo=BASE_EXPO))
 
 # ---------- home ----------
 def termo_dia():
@@ -201,10 +268,11 @@ def pg_home():
 <p class="sub-h">Arte contemporânea (pinturas e esculturas)</p>
 <p class="lead">Arte inspirada na natureza. Escolha sua obra, contato direto com a artista.</p>
 <p><a class="btn" href="/obras/">Ver as obras</a> <a class="btn o" href="{wa('Olá, Wil! Vi seu site e gostaria de conversar sobre suas obras.')}" rel="noopener">Falar no WhatsApp</a></p></div>
-<div>{pic('tela-01', 'Tela 01, pintura abstrata amarela e laranja de Wil Catarina', 1400, 785, prio=True)}</div></div></section>
+<div>{pic('tela-01', 'Traços do Infinito, pintura abstrata amarela e laranja de Wil Catarina', 1400, 785, prio=True)}</div></div></section>
 <div class="w"><div class="resp"><strong>Wil Catarina</strong> é artista visual e curadora de Niterói (RJ). Cria pinturas, desenhos e esculturas que incorporam elementos da natureza. Sua trajetória inclui exposições individuais e coletivas em diversos espaços culturais relevantes no Brasil e no exterior, em especial o Museu de Arte Contemporânea (MAC).</div>
 <h2>Obras disponíveis</h2><div class="grade"><!--OBRAS-->{cards}<!--/OBRAS--></div>
 <p><a href="/obras/">Ver todas as obras »</a></p></div>
+{secao_expo_home()}
 <section class="faixa"><div class="w"><div class="hero" style="padding-block:0"><div class="ph-wrap">{pic('wil', 'Wil Catarina, artista visual, segurando uma pequena escultura', 712, 827, (480, 712), '(min-width:800px) 480px, 100vw').replace('<img ','<img class="ph" style="max-width:420px;width:100%" ')}</div>
 <div><h2 style="margin-top:0">Sobre a artista</h2><p>“{e(S['frase'])}” A obra de Wil nasce do diálogo entre razão e sensibilidade, com olhar atento ao corpo, ao tempo e à matéria. É graduada em Artes pela UFF e faz oficinas e workshops para compartilhar seu processo.</p><p><a href="/sobre/">Conheça a trajetória »</a></p></div></div></div></section>
 {termo_dia()}<div class="w"><h2>Onde expor arte no Rio de Janeiro</h2><p>Museus, galerias e centros culturais do estado, organizados por cidade. <a href="/onde-expor-arte-rj/">Ver locais de exposição »</a></p><h2>Do blog</h2><ul class="lista">{posts}</ul>
@@ -312,7 +380,7 @@ def tecnicos(urls):
     blog = "\n".join(f"- [{p['titulo']}]({DOM}/blog/{p['slug']}/)" for p in BLOG)
     gl = "\n".join(f"- [{t['termo']}]({DOM}{t['url']}): {t['resumo']}" for t in TERMOS)
     (SAIDA / "llms.txt").write_text(f"# Wil Catarina Artes\n\n> {S['descricao']}\n\nWil Catarina é artista visual e curadora de Niterói (RJ), graduada em Artes pela UFF. As obras são vendidas pelo WhatsApp {S['whatsapp_exibir']}.\n\n## Obras\n{obras}\n\n## Páginas\n- [Sobre a artista]({DOM}/sobre/)\n- [Contato]({DOM}/contato/)\n\n## Glossário de arte\n{gl}\n\n## Blog\n{blog}\n\nVersão completa em texto: {DOM}/llms-full.txt\n", encoding="utf8")
-    (SAIDA / "favicon.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1d6b6b"/><text x="32" y="43" font-family="Georgia,serif" font-size="30" font-weight="700" fill="#ffffff" text-anchor="middle">WC</text></svg>', encoding="utf8")
+    (SAIDA / "favicon.svg").write_text(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{LOGO_VB}"><path fill="#1d6b6b" fill-rule="evenodd" d="{LOGO_D}"/></svg>', encoding="utf8")
     shutil.copy(RAIZ / "estilo/estilo.css", SAIDA / "estilo.css")
     for f in (RAIZ / "estilo/fontes").glob("*.woff2"):
         shutil.copy(f, SAIDA / "img" / f.name)
@@ -651,12 +719,15 @@ def main():
         webp(p["imagem"] + ".png", p["imagem"], tam)
     webp("wil.jpg", "wil", (480, 712))
     og()
+    fotos_expo()
+    for f in sorted((RAIZ / "fotos/obras").glob("*.jpg")):
+        webp_cache(f, f.stem)
     carregar_termos()
     carregar_locais()
-    modelos(); painel(); pg_home(); pg_obras(); pg_sobre(); pg_blog(); pg_contato(); pg_404(); pg_glossario(); pgs_legais(); feed(); llms_full(); urls_locais = pgs_locais()
+    modelos(); painel(); pg_home(); pg_obras(); pg_expo(); pg_sobre(); pg_blog(); pg_contato(); pg_404(); pg_glossario(); pgs_legais(); feed(); llms_full(); urls_locais = pgs_locais()
     for o in S["obras"]:
         pg_obra(o)
-    urls = ["/", "/obras/", "/sobre/", "/glossario/"] + ["/blog/", "/contato/", "/politica-de-privacidade/", "/termos-de-uso/", "/acessibilidade/"] + [t["url"] for t in TERMOS] + [f"/blog/{p['slug']}/" for p in BLOG] + urls_locais
+    urls = ["/", "/obras/", BASE_EXPO, "/sobre/", "/glossario/"] + ["/blog/", "/contato/", "/politica-de-privacidade/", "/termos-de-uso/", "/acessibilidade/"] + [t["url"] for t in TERMOS] + [f"/blog/{p['slug']}/" for p in BLOG] + urls_locais
     tecnicos(urls)
     print(("PRODUÇÃO" if PROD else "TESTE (noindex)"), "-", len(urls), "páginas")
 
