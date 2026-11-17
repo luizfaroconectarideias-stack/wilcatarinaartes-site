@@ -101,7 +101,7 @@ def faq_html(lista):
     return "".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in lista)
 
 # ---------- layout ----------
-NAV = [("Obras", "/obras/"), ("Sobre a artista", "/sobre/"), ("Exposições", "/projetos-e-exposicoes/"), ("Glossário", "/glossario/"), ("Onde expor", "/onde-expor-arte-rj/"), ("Blog", "/blog/"), ("Contato", "/contato/")]
+NAV = [("Início", "/"), ("Obras", "/obras/"), ("Sobre a artista", "/sobre/"), ("Exposições", "/projetos-e-exposicoes/"), ("Onde expor", "/onde-expor-arte-rj/"), ("Blog", "/blog/"), ("Contato", "/contato/")]
 CSS = re.sub(r"\s+", " ", re.sub(r"/\*.*?\*/", "", (RAIZ / "estilo/estilo.css").read_text(encoding="utf8"), flags=re.S)).replace(" {", "{").replace("{ ", "{").replace("; ", ";").replace(": ", ":")
 
 def meta_desc(t, n=158):
@@ -281,7 +281,7 @@ def pg_home():
           pessoa(), {"@type": "WebPage", "url": DOM + "/", "name": "Wil Catarina Artes", "about": {"@id": PESSOA_ID}, "isPartOf": {"@id": SITE_ID},
                      "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".resp", "h1"]}}, faq_ld(S["faq"])]
     pre = '<link rel="preload" as="image" href="/img/tela-01-1400.webp" imagesrcset="/img/tela-01-480.webp 480w, /img/tela-01-900.webp 900w, /img/tela-01-1400.webp 1400w" imagesizes="(min-width:800px) 560px, 100vw" fetchpriority="high">'
-    gravar("/", pagina("/", "Wil Catarina — artista visual em Niterói | Telas e esculturas", S["descricao"], corpo, ld, extra_head=pre))
+    gravar("/", pagina("/", "Wil Catarina — artista visual em Niterói | Telas e esculturas", S["descricao"], corpo, ld, extra_head=pre, ativo="/"))
 
 # ---------- sobre ----------
 def pg_sobre():
@@ -500,7 +500,7 @@ def pg_glossario():
 <p><a href="/glossario/">Ver todos os termos</a></p></div></div>"""
         ld = [{"@type": "WebSite", "@id": SITE_ID, "url": DOM + "/", "name": S["nome_site"], "inLanguage": "pt-BR"}, pessoa(),
               {"@type": "CollectionPage", "name": f"Glossário de arte: letra {L}", "url": DOM + url, "isPartOf": {"@id": DOM + "/glossario/#set"}, "publisher": {"@id": PESSOA_ID}},
-              crumb_ld([("Início", "/"), ("Glossário", "/glossario/"), (f"Letra {L}", url)])]
+              crumb_ld([("Início", "/"), (f"Letra {L}", url)])]
         gravar(url, pagina(url, f"Glossário de arte: termos com a letra {L}", meta_desc(f"Termos de arte que começam com {L}: {nomes}. Veja o significado de cada um."), corpo, ld, ativo="/glossario/").replace("index,follow,max-image-preview:large", "noindex,follow"))
     for t in TERMOS:
         L = inicial(t)
@@ -533,7 +533,7 @@ def pg_glossario():
                "isPartOf": {"@id": SITE_ID}, "publisher": {"@id": PESSOA_ID}, "mainEntity": {"@id": DOM + t["url"] + "#termo"},
                "speakable": {"@type": "SpeakableSpecification", "cssSelector": [".resumo", "h1"]},
                **({"citation": [{"@type": "CreativeWork", "name": n, "url": u} for n, u in t["fontes"]]} if t["fontes"] else {})},
-              faq_ld(t["faq"]), crumb_ld([("Início", "/"), ("Glossário", "/glossario/"), (f"Letra {L}", f"/glossario/letra-{L.lower()}/"), (nome_termo(t).capitalize(), t["url"])])]
+              faq_ld(t["faq"]), crumb_ld([("Início", "/"), (f"Letra {L}", f"/glossario/letra-{L.lower()}/"), (nome_termo(t).capitalize(), t["url"])])]
         gravar(t["url"], pagina(t["url"], t["titulo_seo"], meta_desc(t["resumo"]), corpo, ld, ativo="/glossario/", tipo="article"))
 
 PAGINAS_LEGAIS = [("politica-de-privacidade", "Política de Privacidade"), ("termos-de-uso", "Termos de Uso"), ("acessibilidade", "Acessibilidade")]
