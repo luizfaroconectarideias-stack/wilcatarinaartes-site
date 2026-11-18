@@ -110,6 +110,21 @@ def meta_desc(t, n=158):
         return t
     return t[:n].rsplit(" ", 1)[0].rstrip(",;:.") + "…"
 
+# Medição (GA4 do site da Wil, código enviado pelo Luiz em 18/11/2026). Só vai para as páginas de produção (PROD)
+# e só carrega com a permissão do visitante no aviso de cookies ("Aceitar todos").
+# O gtag.js carrega depois do load (1,5 s) para não pesar no PageSpeed; os cliques em WhatsApp, telefone e e-mail
+# viram o evento padrão generate_lead (o mesmo nome em todos os sites da agência).
+GA4_ID = "G-R9XK3E0BZD"
+GA4_TAG = ("<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}"
+           "gtag('js',new Date());gtag('config','" + GA4_ID + "');"
+           "window.wcCarregaGA=function(){if(window.wcGA)return;window.wcGA=1;var s=document.createElement('script');s.async=1;"
+           "s.src='https://www.googletagmanager.com/gtag/js?id=" + GA4_ID + "';document.head.appendChild(s)};"
+           "addEventListener('load',function(){setTimeout(function(){var c=null;try{c=localStorage.getItem('wc_cookies')}catch(x){}if(c==='todos')wcCarregaGA()},1500)});"
+           "document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(!a)return;"
+           "var h=a.getAttribute('href')||'',m=h.indexOf('wa.me')>-1||h.indexOf('api.whatsapp.com')>-1?'whatsapp':"
+           "h.indexOf('tel:')===0?'telefone':h.indexOf('mailto:')===0?'email':'';"
+           "if(m)gtag('event','generate_lead',{method:m,link_url:h})});</script>")
+
 def pagina(url, titulo, desc, corpo, ld, og="/img/og.jpg", ativo=None, tipo="website", extra_head="", raw_title=False):
     canon = DOM + url
     nav = "".join(f'<li><a href="{u}"{" aria-current=page" if u == ativo else ""}>{n}</a></li>' for n, u in NAV)
@@ -137,7 +152,7 @@ def pagina(url, titulo, desc, corpo, ld, og="/img/og.jpg", ativo=None, tipo="web
 <meta property="og:image:alt" content="{e(t)}">
 <link rel="preload" href="/img/j400.woff2" as="font" type="font/woff2" crossorigin>
 <style>{CSS}</style>
-{extra_head}{jl(ld)}
+{extra_head}{jl(ld)}{GA4_TAG if PROD else ""}
 </head><body>
 <a class="skip" href="#c">Ir para o conteúdo</a>
 <header class="top"><div class="w bar">
@@ -152,8 +167,8 @@ def pagina(url, titulo, desc, corpo, ld, og="/img/og.jpg", ativo=None, tipo="web
 <div><a href="/obras/">Obras</a> · <a href="/sobre/">Sobre</a> · <a href="/glossario/">Glossário</a> · <a href="/onde-expor-arte-rj/">Onde expor</a> · <a href="/blog/">Blog</a> · <a href="/contato/">Contato</a><br><a href="/politica-de-privacidade/">Privacidade</a> · <a href="/termos-de-uso/">Termos de uso</a> · <a href="/acessibilidade/">Acessibilidade</a> · <button type="button" class="lk" id="ck-abrir">Preferências de cookies</button><br>© {S['nome_site']}. Todas as obras são de autoria de Wil Catarina.</div>
 </div></footer>
 <a class="btn flut" href="{wa('Olá, Wil! Vi seu site e gostaria de conversar sobre suas obras.')}" rel="noopener" aria-label="Falar no WhatsApp">Falar no WhatsApp</a>
-<div class="ck" id="ck" role="region" aria-label="Aviso de cookies" hidden><p>Usamos somente cookies essenciais para o site funcionar. Cookies opcionais, como os de estatística, só são ativados com a sua permissão. Saiba mais na <a href="/politica-de-privacidade/#6-cookies-e-preferencias">Política de Privacidade</a>.</p><div><button type="button" class="btn" data-ck="todos">Aceitar todos</button><button type="button" class="btn o" data-ck="essenciais">Só essenciais</button></div></div>
-<script>(function(){{var b=document.getElementById('ck'),k='wc_cookies',v=null;try{{v=localStorage.getItem(k)}}catch(x){{}}window.wcConsent=v;function abre(){{b.hidden=false;document.body.classList.add('ck-on')}}function fecha(c){{try{{localStorage.setItem(k,c)}}catch(x){{}}window.wcConsent=c;b.hidden=true;document.body.classList.remove('ck-on')}}if(!v)abre();b.addEventListener('click',function(ev){{var c=ev.target.getAttribute('data-ck');if(c)fecha(c)}});var a=document.getElementById('ck-abrir');if(a)a.addEventListener('click',function(){{abre();b.querySelector('button').focus()}})}})();</script>
+<div class="ck" id="ck" role="region" aria-label="Aviso de cookies" hidden><p>Usamos cookies essenciais para o site funcionar e, só com a sua permissão, cookies de estatística (Google Analytics) para entender as visitas. Saiba mais na <a href="/politica-de-privacidade/#6-cookies-e-preferencias">Política de Privacidade</a>.</p><div><button type="button" class="btn" data-ck="todos">Aceitar todos</button><button type="button" class="btn o" data-ck="essenciais">Só essenciais</button></div></div>
+<script>(function(){{var b=document.getElementById('ck'),k='wc_cookies',v=null;try{{v=localStorage.getItem(k)}}catch(x){{}}window.wcConsent=v;function abre(){{b.hidden=false;document.body.classList.add('ck-on')}}function fecha(c){{try{{localStorage.setItem(k,c)}}catch(x){{}}window.wcConsent=c;b.hidden=true;document.body.classList.remove('ck-on');if(c==='todos'&&window.wcCarregaGA)wcCarregaGA()}}if(!v)abre();b.addEventListener('click',function(ev){{var c=ev.target.getAttribute('data-ck');if(c)fecha(c)}});var a=document.getElementById('ck-abrir');if(a)a.addEventListener('click',function(){{abre();b.querySelector('button').focus()}})}})();</script>
 </body></html>"""
 
 def gravar(url, conteudo):

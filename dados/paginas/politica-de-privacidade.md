@@ -2,7 +2,7 @@
 titulo: Política de Privacidade
 titulo_seo: Política de Privacidade | Wil Catarina Artes
 resumo: Como o site Wil Catarina Artes trata dados pessoais de quem visita ou entra em contato, de acordo com a Lei Geral de Proteção de Dados (LGPD).
-atualizado: 2026-11-08
+atualizado: 2026-11-18
 ---
 Esta Política de Privacidade explica como o site **Wil Catarina Artes** (wilcatarinaartes.com.br) trata dados pessoais, de acordo com a **Lei Geral de Proteção de Dados Pessoais (LGPD, Lei nº 13.709/2018)**.
 
@@ -13,7 +13,7 @@ A responsável (controladora) pelo tratamento é a artista visual **Wil Catarina
 ## 2. Quais dados o site trata
 
 - **Dados que você envia por contato:** ao clicar em "Pedir pelo WhatsApp" ou escrever por WhatsApp, e-mail ou redes sociais, você compartilha seu nome, telefone ou e-mail e a mensagem que escolher enviar. Esses dados ficam nos serviços que você usou (WhatsApp, e-mail etc.).
-- **Dados de navegação:** o site não tem formulários, cadastro de visitantes nem área de login para o público. Usamos a ferramenta de estatísticas **Cloudflare Web Analytics**, que mede acessos de forma agregada, sem cookies de rastreamento e sem criar perfil individual.
+- **Dados de navegação:** o site não tem formulários, cadastro de visitantes nem área de login para o público. Se você aceitar os cookies de estatística, usamos o **Google Analytics** para medir as visitas de forma agregada (páginas vistas, origem da visita, tipo de aparelho e cliques nos botões de contato). Ele não é carregado se você escolher "Só essenciais".
 - **Dados técnicos de hospedagem:** os servidores que entregam o site (Cloudflare) podem registrar o endereço IP e dados da requisição por segurança e funcionamento.
 - **Painel da artista:** existe uma área restrita, só para a artista cadastrar obras. Ela usa um cookie de sessão estritamente necessário para manter o login. Visitantes não usam essa área.
 
@@ -26,7 +26,8 @@ Não pedimos dados desnecessários. **Não envie senhas, códigos de verificaç�
 | Responder seu contato e combinar a compra de uma obra | Procedimentos preliminares relacionados a contrato, a pedido do titular |
 | Realizar a venda e a entrega, se houver compra | Execução de contrato |
 | Cumprir obrigações legais, como emissão de documentos fiscais | Cumprimento de obrigação legal |
-| Manter o site seguro e medir acessos de forma agregada | Legítimo interesse |
+| Manter o site seguro | Legítimo interesse |
+| Medir as visitas com o Google Analytics | Consentimento (aviso de cookies) |
 
 Não vendemos dados pessoais e não os usamos para publicidade de terceiros.
 
@@ -35,26 +36,28 @@ Não vendemos dados pessoais e não os usamos para publicidade de terceiros.
 Só compartilhamos dados quando necessário para o serviço ou exigido por lei, por exemplo:
 
 - **transportadoras e correios,** para a entrega de uma obra comprada;
-- **serviços de tecnologia** que mantêm o site funcionando (hospedagem e estatísticas da Cloudflare);
+- **serviços de tecnologia** que mantêm o site funcionando (hospedagem da Cloudflare) e, com o seu consentimento, o Google Analytics;
 - **autoridades,** quando houver determinação legal.
 
 ## 5. Serviços de terceiros ligados ao site
 
-- **Cloudflare:** hospedagem, segurança e estatísticas de acesso.
+- **Cloudflare:** hospedagem e segurança.
+- **Google Analytics (Google):** estatísticas de visitas, só se você aceitar os cookies de estatística.
 - **WhatsApp, Instagram, Facebook e e-mail:** ao clicar nesses links, você passa a usar serviços de terceiros, regidos pelas políticas de privacidade deles.
 
-As fontes do site ficam hospedadas no próprio site. Ele **não carrega fontes, anúncios ou rastreadores de outras empresas**.
+As fontes do site ficam hospedadas no próprio site. Ele **não carrega fontes nem anúncios de outras empresas**, e o Google Analytics só é carregado com a sua permissão.
 
 ## 6. Cookies e preferências
 
-O site público **não usa cookies de publicidade nem de rastreamento.** Usamos somente o que é essencial para o site funcionar:
+O site público **não usa cookies de publicidade.** Usamos o que é essencial para o site funcionar e, só com a sua permissão, cookies de estatística:
 
 | O quê | Para que serve | Duração |
 |---|---|---|
 | Preferência de cookies (armazenamento local do navegador) | Lembrar se você aceitou ou recusou o aviso de cookies, para não mostrar o aviso de novo | Até você apagar os dados do navegador |
+| Cookies do Google Analytics (`_ga`, `_ga_*`) | Contar visitas e entender como o site é usado, de forma agregada. **Só são criados se você clicar em "Aceitar todos"** | Até 2 anos |
 | Cookie de sessão do painel (`sid`) | Manter a artista conectada na área restrita. Visitantes não recebem este cookie | 30 dias |
 
-Na primeira visita, um aviso pergunta a sua preferência. Se no futuro o site passar a usar cookies opcionais, como os de estatística, eles **só serão ativados se você aceitar**. Você pode mudar sua escolha a qualquer momento no link **"Preferências de cookies"**, no rodapé de todas as páginas, ou apagar os cookies nas configurações do navegador.
+Na primeira visita, um aviso pergunta a sua preferência. Os cookies de estatística **só são ativados se você aceitar**. Se escolher "Só essenciais", o Google Analytics não é carregado. Você pode mudar sua escolha a qualquer momento no link **"Preferências de cookies"**, no rodapé de todas as páginas, ou apagar os cookies nas configurações do navegador.
 
 ## 7. Por quanto tempo guardamos os dados
 
